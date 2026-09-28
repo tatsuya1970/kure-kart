@@ -1,0 +1,86 @@
+{
+  "akishio": {
+    "name": "潜水艦あきしお (てつのくじら館)",
+    "lat": 34.241972,
+    "lon": 132.555213,
+    "headingDeg": 68.7,
+    "excludeRadius": 0,
+    "comment": "海上自衛隊呉史料館 (てつのくじら館) の前に陸揚げされている、退役した潜水艦「あきしお」(ゆうしお型 SS-579、全長 76.2m・幅 9.9m)。位置と向きは OpenStreetMap の船体の輪郭 (way 170619760) の中心と主軸 (方位 68.7°) に合わせてある。headingDeg は艦首の方位 (北から時計回り)。PLATEAU には入っていないので独自モデルで置く。"
+  },
+  "ondoBridge": {
+    "name": "音戸大橋",
+    "lat": 34.19505,
+    "lon": 132.53735,
+    "headingDeg": 270,
+    "excludeRadius": 0,
+    "comment": "1961年 (昭和36年) 開通。本州 (警固屋) と倉橋島 (音戸) の間、平清盛が開削したと伝わる音戸の瀬戸を渡る朱色のアーチ橋 (全長 172m)。船を通すため桁が高く、本州側は螺旋状の取り付け道路で上る。PLATEAU の tran には路面しか無いので、橋の区間 (Track.bridge) を拾ってアーチと吊材を足す。 from / to は主桁の両端 (OSM の way 133333989 の直線部分)。",
+    "from": {
+      "lat": 34.19486,
+      "lon": 132.5383
+    },
+    "to": {
+      "lat": 34.19496,
+      "lon": 132.53653
+    }
+  },
+  "secondOndoBridge": {
+    "name": "第二音戸大橋",
+    "lat": 34.19821,
+    "lon": 132.53915,
+    "headingDeg": 262,
+    "excludeRadius": 0,
+    "comment": "2013年開通の国道487号 警固屋音戸バイパスの橋。音戸大橋の北 350m に並ぶ朱色の中路アーチ橋 (アーチ支間 280m)。コースは通らないので、ゴール地点から見える遠景として桁ごと独自モデルで置く。path は OSM の way 157260072 の両端。",
+    "path": [
+      [
+        34.1986618,
+        132.5365845
+      ],
+      [
+        34.1977742,
+        132.5417588
+      ]
+    ]
+  },
+  "alleySubs": {
+    "name": "アレイからすこじま の潜水艦",
+    "lat": 34.2262,
+    "lon": 132.547,
+    "headingDeg": 58,
+    "excludeRadius": 0,
+    "comment": "アレイからすこじまは旧呉海軍工廠の赤れんが倉庫が並ぶ公園で、目の前の岸壁に海上自衛隊の潜水艦が間近に停泊している日本で唯一の場所。係留中の潜水艦を 3 隻、海の上に並べる (水面にならない位置には置かない)。"
+  },
+  "yamatoMuseum": {
+    "name": "大和ミュージアム (呉市海事歴史科学館) と呉中央桟橋ターミナル",
+    "lat": 34.241184,
+    "lon": 132.555842,
+    "headingDeg": 0,
+    "excludeRadius": 0,
+    "model": "models/yamato_museum.glb",
+    "comment": "Unity プロジェクト (Kure-Hanabi2026-2-web) の PlateauFBX/yamato-musium0526.fbx から、専用テクスチャの 2 棟 (大和ミュージアムの本体と、南東の呉中央桟橋ターミナル = 緑の屋根の「Yanato-dome」) を tools/convert_models.py で GLB にしたもの。配置は Unity のシーン (WebOptimized/CombinedMeshes の cell_-1_1_マテリアル_0 と cell_0_1_Yanato-dome001_002_0) と同じ。lat / lon は本体の外接矩形の中心で、PLATEAU の LOD1 の同じ建物 (85.6m × 95.3m、高さ 19.6m) の外接矩形に合わせた。excludeRects は LOD1 の建物を消す矩形 [中心の東へのずれ m, 南へのずれ m, 東西の半幅, 南北の半幅]。",
+    "excludeRects": [
+      [
+        0,
+        0,
+        44,
+        49
+      ],
+      [
+        51.9,
+        56.9,
+        28,
+        28
+      ]
+    ]
+  },
+  "yamatoShip": {
+    "name": "戦艦大和",
+    "lat": 34.2035,
+    "lon": 132.538,
+    "headingDeg": 0,
+    "excludeRadius": 0,
+    "radiusEW": 140,
+    "radiusNS": 350,
+    "speed": 8,
+    "comment": "戦艦大和 (全長 263m) の独自モデル (src/landmarks.ts の buildYamatoModel)。音戸の瀬戸の北、警固屋の沖の呉湾 (コースの海沿いの道から 250〜500m) を楕円 (東西の半径 radiusEW m、南北の半径 radiusNS m) を描いて反時計回りに航行する。レース中は経過時間から位置を決め、先頭のカートが警固屋を走る 2 分 40 秒ごろに楕円の南の端に来る。speed は m/s (約 16 ノット)。"
+  }
+}

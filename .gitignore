@@ -1,0 +1,31 @@
+node_modules
+dist
+data/citygml
+*.log
+data/shots*
+data/dem_probe.txt
+data/lod2tex
+data/dem_grid.bin
+data/dem_grid.bin.key
+data/osm/*_raw.json
+data/osm/*query.txt
+data/osm/q?.json
+data/osm/q?.txt
+data/osm/query.txt
+
+# プロモ動画 (videos/)。素材と書き出しは重いので入れない。
+# 作り直しは: node tools/record_promo.mjs → node tools/clips_to_mp4.mjs videos/kure-kart-promo/assets
+videos/clips*
+videos/*/renders
+videos/*/snapshots
+videos/*/assets/*.mp4
+videos/*/.hyperframes
+videos/*/.media
+videos/*/.thumbnails
+# capture/ は npx hyperframes capture で取り直せる
+videos/*/capture
+# TURN の設定 (npm run turn:prepare が書き出す。資格情報 API の URL を含むことがある)
+public/turn.json
+
+# 再配布の条件を確認中のモデル (戦艦大和)。配信にもリポジトリにも入れない
+data/models_private

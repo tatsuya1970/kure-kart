@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <!-- ==== SEO:ja ====
+       言語ごとの見出し・説明・カード。英語版は /en/ に同じ体裁で置いてあり、
+       tools/build_en_page.mjs がビルド後にこのブロックを英語版へ差し替えて書き出す。
+       囲みのコメント行は目印なので消さないこと。
+       ドメインを変えたら、この中の URL と public/sitemap.xml を直す。 -->
+  <title>呉グランプリ Kure Kart｜PLATEAU 3D都市モデルで走るブラウザカートレース</title>
+  <meta name="description" content="実在の呉の街を走る無料のブラウザカートレース。国土交通省 PLATEAU の3D都市モデルから起こした12.2kmのコースを、呉駅から てつのくじら館・大和ミュージアム・蔵本通り・呉市役所・呉本通り・めがね橋・入船山記念館・アレイからすこじまと走り、音戸大橋の螺旋を上って渡り切った所でゴールします。インストール不要、スマホ対応、最大8人のオンライン対戦つき。" />
+  <link rel="canonical" href="https://kure.citykart.jp/" />
+  <link rel="alternate" hreflang="ja" href="https://kure.citykart.jp/" />
+  <link rel="alternate" hreflang="en" href="https://kure.citykart.jp/en/" />
+  <link rel="alternate" hreflang="x-default" href="https://kure.citykart.jp/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Kure Kart" />
+  <meta property="og:title" content="呉グランプリ Kure Kart｜PLATEAUで走るブラウザカートレース" />
+  <meta property="og:description" content="実在の呉の街を走る無料のブラウザカートレース。PLATEAU の3D都市モデルから起こした呉駅発・音戸大橋ゴールの12.2kmコース。大和ミュージアム・蔵本通り・音戸大橋の螺旋も走ります。インストール不要、スマホ対応、最大8人のオンライン対戦つき。" />
+  <meta property="og:url" content="https://kure.citykart.jp/" />
+  <meta property="og:image" content="https://kure.citykart.jp/ogp.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="呉の街を走るカートと「KURE KART 呉グランプリ」のタイトル" />
+  <meta property="og:locale" content="ja_JP" />
+  <meta property="og:locale:alternate" content="en_US" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="呉グランプリ Kure Kart｜PLATEAUで走るブラウザカートレース" />
+  <meta name="twitter:description" content="実在の呉の街を走る無料のブラウザカートレース。呉駅から大和ミュージアム・蔵本通り・呉本通りを抜けて音戸大橋まで12.2km、最大8人のオンライン対戦つき。インストール不要。" />
+  <meta name="twitter:image" content="https://kure.citykart.jp/ogp.png" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "VideoGame",
+    "name": "呉グランプリ Kure Kart",
+    "url": "https://kure.citykart.jp/",
+    "image": "https://kure.citykart.jp/ogp.png",
+    "description": "実在の呉の街を走る無料のブラウザカートレース。国土交通省 PLATEAU の3D都市モデルから起こした呉駅発・音戸大橋ゴールの12.2kmのコースを走ります。",
+    "inLanguage": ["ja", "en"],
+    "genre": "Racing",
+    "gamePlatform": "Web browser",
+    "applicationCategory": "GameApplication",
+    "operatingSystem": "Web browser (WebGL2)",
+    "playMode": ["SinglePlayer", "MultiPlayer"],
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "JPY" },
+    "author": { "@type": "Person", "name": "tatsuya-takemura" },
+    "isPartOf": { "@type": "WebSite", "@id": "https://citykart.jp/#website", "name": "シティカート", "url": "https://citykart.jp/" },
+    "isBasedOn": "https://www.mlit.go.jp/plateau/",
+    "contentLocation": { "@type": "City", "name": "呉市", "address": { "@type": "PostalAddress", "addressCountry": "JP", "addressRegion": "広島県" } }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "シティカート", "item": "https://citykart.jp/" },
+      { "@type": "ListItem", "position": 2, "name": "呉グランプリ Kure Kart", "item": "https://kure.citykart.jp/" }
+    ]
+  }
+  </script>
+  <!-- ==== /SEO:ja ==== -->
+  <meta name="theme-color" content="#0b1a2a" />
+  <!-- ファビコン。データ URI ではなく実ファイルにしてある (Google の検索結果の
+       ファビコンは、クローラが取りに行ける URL でないと使われない)。
+       絵柄は 4 サイト共通。作り直しは city-kart の scripts/make-icons.mjs。 -->
+  <link rel="icon" href="/favicon.ico" sizes="32x32" />
+  <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <style>
+    html, body { margin: 0; padding: 0; overflow: hidden; background: #0b1a2a; font-family: "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif; }
+    canvas#game { display: block; width: 100vw; height: 100vh; }
+    /* ノッチやホームバーに被らないよう、安全領域のぶん内側に寄せる (PC では 0) */
+    #hud { position: fixed; inset: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); pointer-events: none; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,.8); user-select: none; }
+    .box { position: absolute; }
+    #lap { top: 16px; left: 20px; font-size: 28px; font-weight: 800; }
+    #lap small { font-size: 16px; font-weight: 600; opacity: .9; }
+    #timer { top: 52px; left: 22px; font-size: 18px; font-variant-numeric: tabular-nums; }
+    #fps { top: 78px; left: 22px; font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; opacity: .85; }
+    #pos { top: 12px; right: 24px; font-size: 64px; font-weight: 900; line-height: 1; font-style: italic; color: #ffd83d; }
+    #pos small { font-size: 22px; }
+    #speed { bottom: 22px; right: 24px; font-size: 40px; font-weight: 800; font-style: italic; text-align: right; }
+    #speed small { font-size: 16px; font-weight: 600; }
+    #item { top: 20px; left: 50%; transform: translateX(-50%); width: 84px; height: 84px; border: 4px solid #fff; border-radius: 14px; background: rgba(0,0,0,.35); display: flex; align-items: center; justify-content: center; font-size: 46px; }
+    #minimap { position: absolute; bottom: 20px; left: 20px; width: 260px; height: 190px; background: rgba(0,0,0,.35); border-radius: 12px; }
+    #coins { bottom: 216px; left: 22px; font-size: 20px; font-weight: 700; color: #ffd83d; }
+    #landmark { top: 120px; left: 50%; transform: translateX(-50%); font-size: 40px; font-weight: 900; letter-spacing: .1em; opacity: 0; transition: opacity .3s; color: #fff; background: linear-gradient(90deg, transparent, rgba(200,0,40,.85), transparent); padding: 6px 80px; }
+    #center { top: 35%; left: 50%; transform: translate(-50%,-50%); font-size: 120px; font-weight: 900; font-style: italic; color: #ffd83d; opacity: 0; }
+    #wrong { top: 60%; left: 50%; transform: translateX(-50%); font-size: 28px; font-weight: 800; color: #ff5b5b; display: none; }
+    #overlay { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; background: radial-gradient(ellipse at center, rgba(15,40,70,.92), rgba(5,10,20,.97)); color: #fff; text-align: center; z-index: 10; padding: max(20px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(20px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); overflow-y: auto; }
+    /* justify-content: center だと縦が足りないとき上端が切れてスクロールで戻れない。
+       auto マージンなら余裕があるときだけ中央寄せになる。 */
+    #overlay > *:first-child { margin-top: auto; }
+    #overlay > *:last-child { margin-bottom: auto; }
+    #overlay h1 { font-size: 54px; margin: 0 0 6px; font-style: italic; letter-spacing: .05em; color: #ffd83d; text-shadow: 0 4px 0 #b6201f, 0 8px 20px rgba(0,0,0,.6); }
+    #overlay h2 { font-size: 20px; font-weight: 500; margin: 0 0 24px; opacity: .9; }
+    #overlay .route { font-size: 15px; opacity: .85; margin-bottom: 26px; line-height: 1.7; max-width: 640px; }
+    /* コースを OpenStreetMap に重ねた地図 (public/course-map.html) へのリンク */
+    #overlay .mapLink { margin: -16px 0 22px; font-size: 14px; }
+    #overlay .mapLink a { color: #ffd83d; }
+    /* 縦の狭い窓でも収まるよう vh でも上限をかける (アスペクト比は width 基準で保たれる) */
+    #titleMap { width: min(560px, 84vw, 62vh); height: auto; margin: 0 0 14px; }
+    #overlay button { font-size: 24px; font-weight: 800; padding: 14px 48px; border: none; border-radius: 40px; background: linear-gradient(#ff5a5a, #c81e1e); color: #fff; cursor: pointer; box-shadow: 0 6px 0 #7d0f0f, 0 12px 24px rgba(0,0,0,.5); }
+    #overlay button:disabled { opacity: .5; cursor: default; }
+    #overlay .keys { margin-top: 26px; font-size: 14px; opacity: .8; line-height: 1.8; }
+    /* 絶対配置だと行数が増えたときに .keys と重なるので通常フローに置く */
+    #overlay .credit { margin-top: 22px; font-size: 12px; opacity: .6; max-width: 900px; line-height: 1.7; }
+    #overlay .credit a { color: inherit; text-decoration: underline; }
+    #overlay .author { margin-top: 10px; font-size: 14px; opacity: .85; }
+    #overlay .author a { color: inherit; text-decoration: underline; }
+    #about { margin-top: 26px; max-width: 640px; text-align: left; font-size: 13px; line-height: 1.8; opacity: .72; }
+    #about h3 { font-size: 14px; margin: 14px 0 2px; color: #ffd83d; }
+    #about p { margin: 0; }
+    html[lang="en"] #about .about-ja, html:not([lang="en"]) #about .about-en { display: none; }
+    #overlay .sites { margin-top: 18px; font-size: 12.5px; opacity: .8; }
+    #overlay .sites a { color: #ffd83d; text-decoration: none; border-bottom: 1px solid rgba(255,216,61,.45); }
+    #overlay .sites a:hover { border-bottom-color: #ffd83d; }
+    /* ビルドの識別 (古いページが残っていないかを見分ける) */
+    #buildInfo { margin-top: 8px; font-size: 11px; opacity: .45; font-variant-numeric: tabular-nums; }
+    #progress { width: 360px; height: 8px; background: rgba(255,255,255,.2); border-radius: 4px; margin-top: 18px; overflow: hidden; }
+    #progress div { height: 100%; width: 0%; background: #ffd83d; transition: width .2s; }
+    #quality { margin-top: 16px; font-size: 13px; opacity: .85; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; }
+    /* #overlay button の赤いピルを打ち消す (詳細度を上げて後勝ちにする) */
+    #overlay #quality button { font-size: 13px; font-weight: 600; padding: 5px 14px; border-radius: 14px; background: rgba(255,255,255,.12); color: #fff; border: 1px solid rgba(255,255,255,.25); box-shadow: none; cursor: pointer; }
+    #overlay #quality button:hover { background: rgba(255,255,255,.22); }
+    #overlay #quality button[aria-pressed="true"] { background: #ffd83d; color: #1b1b1b; border-color: #ffd83d; }
+    #overlay #langSwitch button { font-size: 13px; font-weight: 700; padding: 5px 14px; border-radius: 14px; background: rgba(255,255,255,.12); color: #fff; border: 1px solid rgba(255,255,255,.35); box-shadow: none; cursor: pointer; }
+    #overlay #langSwitch button:hover { background: rgba(255,255,255,.24); }
+    #qualityNote { opacity: .6; font-size: 12px; }
+    /* 1人PLAY と 対戦PLAY は同格。大きさも重みも揃え、色だけ変える */
+    #mainButtons { display: flex; gap: 18px; align-items: center; justify-content: center; flex-wrap: wrap; }
+    #overlay #mainButtons button { min-width: 260px; }
+    #overlay #openBtn { background: linear-gradient(#4aa3ff, #1152b8); box-shadow: 0 6px 0 #0b3576, 0 12px 24px rgba(0,0,0,.5); }
+
+    /* ---- オンライン対戦 ---- */
+    #online { margin-top: 18px; font-size: 15px; width: min(560px, 90vw); }
+    #online label { opacity: .8; }
+    #online .row { display: flex; gap: 8px; align-items: center; justify-content: center; flex-wrap: wrap; }
+    #online input { font-size: 17px; padding: 9px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,.3); background: rgba(255,255,255,.1); color: #fff; width: 150px; text-align: center; }
+    #online input::placeholder { color: rgba(255,255,255,.45); }
+    #overlay #online button { font-size: 15px; font-weight: 700; padding: 9px 20px; border-radius: 12px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.3); box-shadow: none; }
+    #overlay #online button:hover { background: rgba(255,255,255,.24); }
+    #overlay #online #goBtn { background: linear-gradient(#ffd83d, #e0a800); color: #22160a; border: none; }
+    #overlay #online #goBtn:disabled { opacity: .45; }
+    #roomCode { font-size: 30px; font-weight: 900; letter-spacing: .3em; color: #ffd83d; }
+    #countLabel { font-size: 16px; opacity: .8; }
+    #countNum { font-size: 44px; font-weight: 900; font-style: italic; color: #ffd83d; min-width: 74px; display: inline-block; text-align: center; }
+    #countNum.soon { color: #ff7a5a; }
+    /* 対戦相手が来たときの一言 (数秒で消える) */
+    #lobbyToast { margin: 6px auto 0; font-size: 18px; font-weight: 800; color: #58dc78; animation: pulse 1.2s infinite; }
+    #playerList { list-style: none; padding: 0; margin: 14px auto; max-width: 380px; }
+    #playerList li { display: flex; align-items: center; gap: 10px; padding: 7px 14px; margin: 5px 0; border-radius: 10px; background: rgba(255,255,255,.08); font-size: 16px; }
+    #playerList .dot { width: 14px; height: 14px; border-radius: 50%; flex: none; }
+    #playerList .tag { margin-left: auto; font-size: 12px; opacity: .7; }
+    #netNote { margin-top: 10px; font-size: 13px; opacity: .75; line-height: 1.7; }
+    /* 対戦待ちの状況 (presence)。誰か待っていれば緑に光る */
+    #presence { margin: 12px auto 0; padding: 9px 16px; border-radius: 12px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.18); font-size: 15px; line-height: 1.6; }
+    #presence .pdot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #8f979f; margin-right: 8px; vertical-align: middle; }
+    #presence.checking .pdot { animation: pulse 1.2s infinite; }
+    #presence.live { border-color: rgba(88,220,120,.7); background: rgba(40,160,80,.2); }
+    #presence.live .pdot { background: #58dc78; box-shadow: 0 0 8px #58dc78; animation: pulse 1.2s infinite; }
+    #presence b { color: #ffd83d; }
+    #presenceSub { font-size: 13px; opacity: .7; }
+    /* アプリ内ブラウザへの注意 (Facebook / LINE 等で開いたときだけ出す) */
+    #browserHint { margin-top: 8px; font-size: 13px; color: #ffd83d; line-height: 1.6; }
+    /* 中継が止まっているときの案内 (1 日の上限に達した等。src/main.ts の updateOnlineAvailability) */
+    #turnAlert { margin: 10px auto 0; padding: 9px 16px; border-radius: 12px; background: rgba(255,120,80,.18); border: 1px solid rgba(255,140,100,.6); color: #ffd0b8; font-size: 14px; line-height: 1.6; }
+    @keyframes pulse { 50% { opacity: .35; } }
+    #results { display: none; }
+    #results table { margin: 0 auto 20px; border-collapse: collapse; font-size: 20px; }
+    #results td { padding: 6px 18px; }
+    /* ゴールタイムのランキング (src/ranking.ts) */
+    #rankBox { margin: 0 auto 18px; max-width: 420px; }
+    #rankBox .rankTitle { font-size: 18px; font-weight: 800; color: #ffd83d; margin-bottom: 6px; }
+    #rankMsg { font-size: 14px; opacity: .85; margin-bottom: 8px; }
+    #rankForm { margin-bottom: 10px; }
+    #rankName { font-size: 17px; padding: 9px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,.3); background: rgba(255,255,255,.1); color: #fff; width: 160px; text-align: center; }
+    #rankName::placeholder { color: rgba(255,255,255,.45); }
+    #overlay #rankSubmit { font-size: 15px; font-weight: 800; padding: 9px 22px; border-radius: 12px; background: linear-gradient(#ffd83d, #e0a800); color: #222; box-shadow: none; }
+    #overlay #rankSubmit:disabled { opacity: .5; }
+    #rankList { list-style: none; margin: 0; padding: 0; font-size: 15px; }
+    #rankList li { display: flex; gap: 12px; padding: 3px 10px; border-radius: 8px; }
+    #rankList li.mine { background: rgba(255,216,61,.2); color: #ffd83d; font-weight: 800; }
+    #rankList .rk { width: 2em; text-align: right; opacity: .8; }
+    #rankList .nm { flex: 1; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    #rankList .tm { font-variant-numeric: tabular-nums; }
+    #rankList .dt { font-size: 12px; opacity: .65; font-variant-numeric: tabular-nums; white-space: nowrap; align-self: center; }
+    #rankEmpty { font-size: 14px; opacity: .7; }
+    /* トップ画面のランキング (src/ranking.ts の setupRankingButton) */
+    #rankOpen { margin-top: 12px; }
+    #overlay #rankOpenBtn { font-size: 16px; font-weight: 800; padding: 9px 26px; border-radius: 22px; background: rgba(255,216,61,.14); border: 1px solid rgba(255,216,61,.65); color: #ffd83d; box-shadow: none; }
+    #topRank { margin: 10px auto 0; width: min(420px, 100%); padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.18); }
+    #topRank .rankTitle { font-size: 16px; font-weight: 800; color: #ffd83d; margin-bottom: 6px; }
+    #topRankList { list-style: none; margin: 0; padding: 0; font-size: 15px; }
+    #topRankList li { display: flex; gap: 12px; padding: 3px 10px; border-radius: 8px; }
+    #topRankList .rk { width: 2em; text-align: right; opacity: .8; }
+    #topRankList .nm { flex: 1; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    #topRankList .tm { font-variant-numeric: tabular-nums; }
+    #topRankList .dt { font-size: 12px; opacity: .65; font-variant-numeric: tabular-nums; white-space: nowrap; align-self: center; }
+    #topRankEmpty, #topRankMsg { font-size: 14px; opacity: .7; }
+    /* ---- タッチ操作 (スマホ / タブレット) ----
+       指を置いたまま隣のボタンへ滑らせても効くよう、#touch は画面全面で触れられ、
+       src/input.ts が座標からボタンを引く。ボタンは #pads に置き、安全領域のぶん内側に寄せる。 */
+    #touch { position: fixed; inset: 0; display: none; z-index: 5; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+    #pads { position: absolute; inset: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); }
+    #pads div { position: absolute; width: 76px; height: 76px; border-radius: 50%; background: rgba(255,255,255,.22); border: 2px solid rgba(255,255,255,.6); color: #fff; font-size: 28px; font-weight: 800; display: flex; align-items: center; justify-content: center; text-shadow: 0 1px 3px rgba(0,0,0,.6); }
+    #pads div.on { background: rgba(255,216,61,.6); border-color: #ffd83d; }
+    /* 左の親指: ハンドル。右の親指: ドリフト (大) とブレーキ、その上にアイテム。アクセルは自動 */
+    #tLeft { left: 18px; bottom: 22px; }
+    #tRight { left: 108px; bottom: 22px; }
+    #tDrift { right: 18px; bottom: 22px; width: 90px; height: 90px; font-size: 34px; }
+    #tBrake { right: 122px; bottom: 22px; width: 64px; height: 64px; font-size: 22px; }
+    #tItem { right: 32px; bottom: 128px; width: 64px; height: 64px; font-size: 26px; }
+    .keys.touchKeys { display: none; }
+    /* WebGL のコンテキストが失われたときの案内 (src/main.ts の watchContextLoss) */
+    #glLost { position: fixed; inset: 0; z-index: 40; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 16px; background: rgba(5,10,20,.94); color: #fff; font-size: 17px; text-align: center; }
+    #glLost button { font-size: 18px; font-weight: 800; padding: 10px 32px; border: 0; border-radius: 10px; background: #ffd83d; color: #111; cursor: pointer; }
+    /* 通信の許可と、外部に伝わる情報の説明 (src/main.ts の startNet) */
+    #netPrivacy { margin-top: 10px; font-size: 12px; line-height: 1.55; opacity: .72; }
+    #presenceOptIn, #netRevoke { margin-top: 8px; }
+    #rotateHint { display: none; margin-top: 14px; font-size: 14px; color: #ffd83d; }
+    @media (pointer: coarse) {
+      #touch { display: block; }
+      #minimap { display: none; }
+      .keys { display: none; }
+      .keys.touchKeys { display: block; }
+      /* HUD は小さく。速度とコインは左右の親指の間 (画面下中央) に置く */
+      #lap { top: 8px; left: 14px; font-size: 22px; }
+      #lap small { font-size: 13px; }
+      #timer { top: 40px; left: 15px; font-size: 15px; }
+      #fps { top: 61px; left: 15px; font-size: 12px; }
+      #pos { top: 8px; right: 16px; font-size: 46px; }
+      #pos small { font-size: 16px; }
+      #item { top: 10px; width: 58px; height: 58px; font-size: 32px; border-width: 3px; border-radius: 10px; }
+      #speed { right: 50%; transform: translateX(50%); bottom: 24px; font-size: 30px; text-align: center; white-space: nowrap; }
+      #speed small { font-size: 13px; }
+      #coins { left: 50%; transform: translateX(-50%); bottom: 66px; font-size: 17px; white-space: nowrap; }
+      #landmark { top: 84px; font-size: min(40px, 6vw); padding: 5px 40px; white-space: nowrap; }
+      #center { font-size: min(120px, 22vw); }
+    }
+    /* 縦持ちでは親指の間が狭いので、速度とコインをボタンの上へ逃がし、横向きを勧める */
+    @media (pointer: coarse) and (orientation: portrait) {
+      #speed { bottom: 132px; }
+      #coins { bottom: 174px; }
+      #rotateHint { display: block; }
+    }
+    /* 横持ちのスマホは縦が 400px 前後しかない。タイトルを詰める */
+    @media (max-height: 500px) {
+      #overlay h1 { font-size: 40px; }
+      #overlay h2 { font-size: 15px; margin-bottom: 14px; }
+      #overlay .route { font-size: 13px; margin-bottom: 16px; }
+      #titleMap { margin-bottom: 8px; }
+      #overlay button { font-size: 20px; padding: 11px 36px; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="game"></canvas>
+  <div id="hud">
+    <div id="lap" class="box">LAP <span id="lapNum">1</span><small>/<span id="lapTotal">2</span></small></div>
+    <div id="timer" class="box">0:00.00</div>
+    <div id="fps" class="box">-- fps</div>
+    <div id="pos" class="box">1<small>st</small></div>
+    <div id="item" class="box"></div>
+    <div id="coins" class="box">🪙 0</div>
+    <canvas id="minimap" width="260" height="190"></canvas>
+    <div id="speed" class="box">0<small> km/h</small></div>
+    <div id="landmark" class="box"></div>
+    <div id="center" class="box"></div>
+    <div id="wrong" class="box" data-en="⚠ WRONG WAY!">⚠ 逆走!</div>
+  </div>
+  <div id="touch">
+    <div id="pads">
+      <div id="tLeft">◀</div>
+      <div id="tRight">▶</div>
+      <div id="tItem">★</div>
+      <div id="tBrake">▼</div>
+      <div id="tDrift">D</div>
+    </div>
+  </div>
+  <div id="overlay">
+    <h1>KURE KART</h1>
+    <h2 data-en="Kure Grand Prix — race the real city, built from MLIT's PLATEAU 3D city models">呉グランプリ — PLATEAU 3D都市モデル (国土交通省) で走る呉の街と音戸の瀬戸</h2>
+    <canvas id="titleMap" width="1120" height="640"></canvas>
+    <div class="route" data-en-html='<b>START</b> Kure Sta. → west on Route 31 over the JR Kure Line → south to the JMSDF Kure Museum (the submarine Akishio) → Yamato Museum → north along the Sakai River on Kuramoto-dori → Kure City Hall → back down Kure Hondori → Megane-bashi → south on Route 487 past the Irifuneyama Memorial Hall → Miyahara → south-west past the shipyard → Alley Karasukojima (submarines moored right across the water) → along the bay → Keigoya → up the double spiral and across the Ondo Bridge → <b>GOAL</b> Ondo, Kurahashi Island<br /><span style="opacity:.75;font-size:13px">12.2 km one way — not a lap race. The racing line runs on PLATEAU road surfaces (100%), and the road width follows the real thing section by section (20 m on the national routes down to 9 m on back streets). Both ends of the Ondo Bridge climb in a spiral, so the course passes over itself twice.</span>'><b>スタート</b> 呉駅 → 国道31号を西へ（JR呉線を跨線橋で越える）→ 南下して てつのくじら館（潜水艦あきしお）→ 大和ミュージアム → 堺川沿いの蔵本通りを北東へ → 呉市役所 → 呉本通りを南西へ → めがね橋 → 国道487号で入船山記念館の脇を南へ → 宮原 → 造船所沿いの道を南西へ → アレイからすこじま（目の前に潜水艦）→ 湾沿いを南へ → 警固屋 → 螺旋を上って音戸大橋を渡る → <b>ゴール</b> 音戸（倉橋島）<br /><span style="opacity:.75;font-size:13px">12.2km のワンウェイ（周回しません）/ 走行線は PLATEAU の道路面の上を 100% 通り、路面の幅も区間ごとに実物に合わせています（国道 20m 〜 市道 9m）。音戸大橋は両岸とも螺旋で上り下りするので、コースが自分の上を 2 回越えます</span></div>
+    <div class="mapLink" data-en-html='<a href="%BASE_URL%course-map.html" target="_blank" rel="noopener">View the course on the map (OpenStreetMap) ↗</a>'><a href="%BASE_URL%course-map.html" target="_blank" rel="noopener">コースを地図で見る（OpenStreetMap）↗</a></div>
+    <div id="results">
+      <table id="resultTable"></table>
+      <div id="rankBox" style="display:none">
+        <div class="rankTitle" data-en="Ranking">ランキング</div>
+        <div id="rankMsg"></div>
+        <div id="rankForm"><input id="rankName" maxlength="10" placeholder="なまえ" data-en-placeholder="name" /> <button id="rankSubmit" data-en="Submit">登録</button></div>
+        <ol id="rankList"></ol>
+        <div id="rankEmpty" style="display:none" data-en="No records yet">まだ記録がありません</div>
+      </div>
+    </div>
+    <div id="mainButtons">
+      <button id="startBtn" disabled data-en="Loading...">読み込み中...</button>
+      <button id="openBtn" disabled data-en="ONLINE PLAY">対戦PLAY</button>
+    </div>
+    <div id="rankOpen" style="display:none"><button id="rankOpenBtn" data-en="🏆 Ranking">🏆 ランキング</button></div>
+    <div id="topRank" style="display:none">
+      <div class="rankTitle" data-en="Ranking (top 20)">ランキング（上位 20）</div>
+      <div id="topRankMsg"></div>
+      <ol id="topRankList"></ol>
+      <div id="topRankEmpty" style="display:none" data-en="No records yet">まだ記録がありません</div>
+    </div>
+    <div id="rotateHint" data-en="📱 Turn your phone sideways for a wider view">📱 スマホを横向きにすると見やすくなります</div>
+    <div id="progress"><div id="progressBar"></div></div>
+    <div id="online">
+      <div id="onlineHome">
+        <div class="row"><label for="playerName" data-en="Your name">対戦での なまえ</label> <input id="playerName" maxlength="10" placeholder="なまえ" data-en-placeholder="name" /></div>
+        <div id="netNote" data-en-html="<b>ONLINE PLAY</b> puts you in a lobby. <b>Once two players are in, a 30-second countdown starts</b> and the race begins. Up to 8 players; empty seats are filled by AI. A jingle plays when an opponent arrives. Browser-to-browser connection, no server."><b>対戦PLAY</b> を押すとロビーに入ります。<b>2 人そろうと 30 秒のカウントダウン</b>が始まり、発走します。最大 8 人、空いた枠は AI が走ります。相手が来ると音で知らせます。通信はブラウザ同士の直接接続です（サーバーはありません）。</div>
+        <div id="presence" class="checking"><span class="pdot"></span><span id="presenceMain" data-en="Checking whether anyone is waiting...">対戦待ちの人がいるか確認しています...</span><div id="presenceSub"></div><button id="presenceOptIn" style="display:none" data-en="Show who is waiting">対戦待ちの人を表示する</button></div>
+        <div id="browserHint" style="display:none"></div>
+        <div id="turnAlert" style="display:none" role="status"></div>
+        <div id="netPrivacy" data-en-html="Online play connects you directly with other players. As in most online games, the players you connect to and the relay servers see your IP address, which is needed to connect. Only the name you enter is shown to others, and nothing is sent until you press the button.">対戦では、ほかのプレイヤーと直接つながって遊びます。多くのオンラインゲームと同じく、つながった相手や中継サーバーには通信に必要な IP アドレスが伝わります。表示されるのは入力した名前だけで、ボタンを押すまで通信は始まりません。</div>
+        <button id="netRevoke" style="display:none" data-en="Stop connecting">通信の許可を取り消す</button>
+        <!--
+          合言葉で部屋を作る方式は、公開ロビーに切り替えたので隠してあります。
+          同時に遊ぶ人が少ないうちは、待ち時間が読めるほうが遊びやすいためです。
+          戻すときはここと src/main.ts の「合言葉」の箇所のコメントを外してください。
+          URL に ?room=XXXXX を付けると、今でも合言葉の部屋に直接入れます。
+        <div class="row">
+          <button id="createBtn">部屋を作る</button>
+          <input id="roomInput" maxlength="5" placeholder="あいことば" />
+          <button id="joinBtn">参加する</button>
+        </div>
+        -->
+      </div>
+      <div id="onlineRoom" style="display:none">
+        <div class="row"><span id="countLabel" data-en="Starts in">発走まで</span> <span id="countNum">30</span></div>
+        <div id="lobbyToast" style="display:none"></div>
+        <ul id="playerList"></ul>
+        <div class="row"><button id="goBtn" disabled data-en="Start now">すぐ始める</button> <button id="leaveBtn" data-en="Leave">やめる</button></div>
+        <div id="netNote2" class="row" style="margin-top:10px;font-size:13px;opacity:.75"></div>
+        <div id="presence2" class="row" style="margin-top:4px;font-size:13px;opacity:.75"></div>
+        <!-- 合言葉の表示 (公開ロビーでは使いません)
+        <div class="row">あいことば <span id="roomCode"></span> <button id="copyBtn">リンクをコピー</button></div>
+        -->
+      </div>
+    </div>
+    <div id="quality">
+      <span data-en="Graphics">画質</span> <span id="qualityBtns"></span>
+      <span id="qualityNote" data-en="Chosen automatically for your machine. Lower it if the frame rate drops.">環境に合わせて自動選択しています。カクつく場合は下げてください</span>
+      <span id="langSwitch"></span>
+    </div>
+    <div class="keys" data-en-html="↑/W: accelerate　↓/S: brake and reverse　←→/A D: steer<br />Shift/Space: drift (release for a mini-turbo)　Ctrl/Enter: use item　C: camera　M: sound">↑/W: アクセル　↓/S: ブレーキ・バック　←→/A D: ハンドル<br />Shift/Space: ドリフト（離してミニターボ）　Ctrl/Enter: アイテム使用　C: カメラ切替　M: 音</div>
+    <div class="keys touchKeys" data-en-html="◀ ▶: steer　D: drift (release for a mini-turbo)　★: use item　▼: brake and reverse<br />The kart accelerates by itself. You can slide your thumb between buttons.">◀ ▶: ハンドル　D: ドリフト（離してミニターボ）　★: アイテム使用　▼: ブレーキ・バック<br />アクセルは自動です。指を置いたまま隣のボタンへ滑らせても効きます</div>
+    <section id="about">
+      <!-- ==== ABOUT:ja ==== -->
+      <div class="about-ja" lang="ja">
+        <h3>呉グランプリ（Kure Kart）とは</h3>
+        <p>実在の広島県呉市の街を走る、無料のブラウザカートレースゲームです。国土交通省の Project PLATEAU（プラトー）が公開している3D都市モデルから、建物・道路・地形を起こしています。インストールや登録は不要で、パソコンでもスマホ（iPhone / Android）でも遊べます。</p>
+        <h3>コース</h3>
+        <p>12.2km のワンウェイで、周回しません。呉駅前をスタートして国道31号を西へ、JR呉線を跨線橋で越えてから南へ下り、潜水艦「あきしお」が陸に横たわる てつのくじら館 と 大和ミュージアム の前を抜けます。堺川沿いの蔵本通りを北東へ進んで呉市役所の前を通り、呉本通りを南西へ下ってめがね橋へ。国道487号で入船山記念館の脇を抜けて宮原へ下り、造船所沿いの道で アレイからすこじま へ。目の前の岸壁には海上自衛隊の潜水艦が並んでいます。国道487号で湾沿いを南へ走り、警固屋から二重の螺旋を上って朱色の音戸大橋で音戸の瀬戸を渡り、倉橋島側の螺旋を下りきった所でゴールです。北には第二音戸大橋も見えます。</p>
+        <h3>遊び方</h3>
+        <p>「1人PLAY」ではAIのカートと走ります。「対戦PLAY」はオンライン対戦で、最大8人が同じレースを走れます（空いた枠はAIが走ります）。アイテムとドリフトのミニターボを使って順位を上げてください。</p>
+      </div>
+      <!-- ==== /ABOUT:ja ==== -->
+      <!-- ==== ABOUT:en ==== -->
+      <div class="about-en" lang="en">
+        <h3>What is Kure Kart?</h3>
+        <p>Kure Kart (Kure Grand Prix) is a free kart racing game that runs in your browser and takes you through the real streets of Kure, the naval port city in Hiroshima Prefecture, Japan. Buildings, roads and terrain come from the 3D city model published by Project PLATEAU, Japan's Ministry of Land, Infrastructure, Transport and Tourism (MLIT). No install or sign-up — it plays on PCs and on phones (iPhone and Android).</p>
+        <h3>The course</h3>
+        <p>12.2 km point to point — this one does not loop. You start in front of Kure Station, head west on Route 31 over the JR Kure Line, then drop south past the JMSDF Kure Museum, where the submarine Akishio lies on dry land, and the Yamato Museum. Kuramoto-dori takes you north-east along the Sakai River past Kure City Hall, then Kure Hondori brings you back down to Megane-bashi. Route 487 takes you past the Irifuneyama Memorial Hall and down to Miyahara, then the road along the shipyard leads to Alley Karasukojima, where JMSDF submarines are moored right across the water. Route 487 follows the bay south to Keigoya, where a double spiral climbs onto the vermilion Ondo Bridge across the Ondo Strait; the race finishes at the bottom of the spiral on the Kurahashi Island side, with the Second Ondo Bridge in view to the north.</p>
+        <h3>How to play</h3>
+        <p>SOLO PLAY races you against AI karts. ONLINE PLAY is online multiplayer for up to 8 players in the same race, with AI filling any empty seats. Use items and drift mini-turbos to move up the order.</p>
+      </div>
+      <!-- ==== /ABOUT:en ==== -->
+    </section>
+    <div class="sites" data-en-html='More cities: <a href="https://hiroshima.citykart.jp/en/">Hiroshima Kart</a> ・ <a href="https://fukuyama.citykart.jp/en/">Fukuyama Kart</a> ・ <a href="https://matsue.citykart.jp/en/">Matsue Kart</a> — all at <a href="https://citykart.jp/en/">citykart.jp</a>'>ほかの街を走る: <a href="https://hiroshima.citykart.jp/">広島グランプリ</a> ・ <a href="https://fukuyama.citykart.jp/">福山グランプリ</a> ・ <a href="https://matsue.citykart.jp/">松江グランプリ</a> — 入口は <a href="https://citykart.jp/">citykart.jp</a></div>
+    <div class="credit" data-en-html='3D city model: MLIT Project PLATEAU, "3D City Model (Project PLATEAU) Kure City (FY2020)", adapted (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>) — buildings LOD1, roads, terrain<br />Route planning, railway alignment, coastline and park outlines: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> (ODbL)'>3D都市モデル: 国土交通省 PLATEAU「3D都市モデル（Project PLATEAU）呉市（2020年度）」を加工して作成 (<a href="https://creativecommons.org/licenses/by/4.0/deed.ja" target="_blank" rel="noopener">CC BY 4.0</a>) / 建築物 LOD1・道路・地形を使用<br />ルートの下書き・JR呉線の線形・海岸線・公園の輪郭: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> (ODbL)</div>
+    <div class="author" data-en-html='Made by <a href="https://www.takemura-techlab.com/" target="_blank" rel="noopener">Takemura TechLab</a>'>作者 <a href="https://www.takemura-techlab.com/" target="_blank" rel="noopener">Takemura TechLab</a></div>
+    <div id="buildInfo"></div>
+  </div>
+  <div id="glLost"><div id="glLostMsg"></div><button id="glLostBtn"></button></div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
