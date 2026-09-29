@@ -12,7 +12,7 @@ import { InputManager } from './input';
 import { AudioSystem } from './audio';
 import { buildRail, type RailSystem } from './rail';
 import { Parks } from './parks';
-import { buildAkishio, buildAlleySubs, buildOndoBridge, buildSecondOndoBridge, loadYamatoMuseum, loadYamatoShip, landmarkBlocksBuilding } from './landmarks';
+import { buildKureStation, kureStationView, buildShipyard, buildAkishio, buildAlleySubs, buildOndoBridge, buildSecondOndoBridge, loadYamatoMuseum, loadYamatoShip, landmarkBlocksBuilding } from './landmarks';
 import { loadLod2 } from './lod2';
 import { rng, lerp, clamp, assetUrl, WAYPOINTS, llToXZ } from './geo';
 import { resolveQuality, saveQuality, allPresets, type QualityLevel } from './quality';
@@ -23,7 +23,7 @@ import { storageGet, storageSet } from './storage';
 
 installErrorHandlers();
 
-// 呉駅から音戸大橋を渡り切るまで 12.2km を走り切る一本道 (周回しない)。
+// 呉駅から音戸大橋を渡り切るまで 12.8km を走り切る一本道 (周回しない)。
 // Track は course_path.json の open を見て開いた経路として扱う (src/track.ts)。
 // LAPS は「ゴールした時点で lap が 2 になる」という約束のためだけに残してある。
 const LAPS = 1;
@@ -39,7 +39,7 @@ const RACERS: RacerDef[] = [
   { name: isJa ? 'フライケーキ' : 'Fry Cake', color: 0x6b4423, accent: 0xf4c95d, isPlayer: false, skill: 0.45 },
 ];
 
-type State = 'loading' | 'title' | 'countdown' | 'race' | 'finish';
+type State = 'loading' | 'title' | 'intro' | 'countdown' | 'race' | 'finish';
 
 /**
  * タイトル画面の画質ボタン。アトラスの解像度が変わるので、切り替えは再読み込みで反映する。
@@ -190,7 +190,10 @@ async function main() {
   sun.shadow.normalBias = 0.5;
   scene.add(sun); scene.add(sun.target);
   // 空 (グラデーションドーム)
-  const skyGeo = new THREE.SphereGeometry(5000, 24, 12);
+  // 描画距離 (camera.far) より大きいと、画質「中・低」で空の真ん中が切り取られて背景色の穴が開くので、
+  // その内側に収める
+  const SKY_R = Math.min(5000, camera.far * 0.9);
+  const skyGeo = new THREE.SphereGeometry(SKY_R, 24, 12);
   const skyMat = new THREE.ShaderMaterial({
     side: THREE.BackSide, depthWrite: false, fog: false,
     uniforms: { top: { value: new THREE.Color(0x4f7fbf) }, bottom: { value: new THREE.Color(0xf7d3a8) } },
@@ -203,7 +206,8 @@ async function main() {
     new THREE.CircleGeometry(150, 32),
     new THREE.MeshBasicMaterial({ color: 0xfff0c8, fog: false, depthWrite: false }),
   );
-  sunDisc.position.copy(SUN_DIR).multiplyScalar(4600);
+  sunDisc.position.copy(SUN_DIR).multiplyScalar(SKY_R * 0.92);
+  sunDisc.scale.setScalar(SKY_R / 5000);
   sunDisc.lookAt(0, 0, 0);
   sky.renderOrder = -2;
   sunDisc.renderOrder = -1;
@@ -268,6 +272,8 @@ async function main() {
   if (!params.get('nodome')) {
     // 呉市の PLATEAU には LOD2 の実写テクスチャが無いので、建物はすべて LOD1 で描く。
     // ここでは置かない。専用モデルは PLATEAU に無いものだけ。
+    scene.add(buildKureStation(terrain));
+    scene.add(buildShipyard(terrain));
     scene.add(buildAkishio(terrain));
     scene.add(buildAlleySubs(terrain));
     scene.add(buildOndoBridge(track));
@@ -348,6 +354,14 @@ async function main() {
 
   // ---- レース状態 ----
   let state: State = 'title';
+  // 発走前の演出 (呉駅を映す → 呉駅を背にしたカートを映す → カートのまわりを 180 度回って追走カメラへ)
+  // どの画面から発走しても (1 人 / 対戦) 同じ長さなので、対戦でも足並みはそろう
+  const INTRO_LEN = 9;
+  let introT = 0;
+  const beginRace = () => {
+    if (params.get('nointro')) { state = 'countdown'; countdown = 3.999; audio.countdown(); return; }
+    state = 'intro'; introT = 0;
+  };
   let raceTime = 0;
   let countdown = 0;
   let lastLabel = -1;
@@ -416,8 +430,7 @@ async function main() {
     presence?.set({ s: 'race' });
     overlay.style.display = 'none';
     audio.start();
-    state = 'countdown'; countdown = 3.999;
-    audio.countdown();
+    beginRace();
   };
   input.onAny = () => audio.start();
 
@@ -713,8 +726,7 @@ async function main() {
       hud.showLandmark(t('race.soloFallback'));
       overlay.style.display = 'none';
       audio.start();
-      state = 'countdown'; countdown = 3.999;
-      audio.countdown();
+      beginRace();
       return;
     }
     mySlot = net.mySlot;
@@ -724,8 +736,7 @@ async function main() {
     setLabel(mySlot, '');
     overlay.style.display = 'none';
     audio.start();
-    state = 'countdown'; countdown = 3.999;
-    audio.countdown();
+    beginRace();
     renderLobby();
   }
 
@@ -903,6 +914,10 @@ async function main() {
       renderer.render(scene, camera);
       return;
     }
+    if (state === 'intro') {
+      introT += dt;
+      if (introT >= INTRO_LEN) { state = 'countdown'; countdown = 3.999; audio.countdown(); }
+    }
     if (state === 'countdown') {
       const prev = Math.ceil(countdown);
       countdown -= dt;
@@ -937,7 +952,7 @@ async function main() {
       }
     }
     // カメラ
-    updateCamera(dt, pin.lookBack);
+    if (state === 'intro') introCamera(introT); else updateCamera(dt, pin.lookBack);
     updateSun(player.mesh.position);
     hud.update(dt, player, karts, raceTime, track, track.labels);
     audio.engineUpdate(Math.abs(player.speed), pin.throttle, player.boostTimer > 0);
@@ -1027,6 +1042,64 @@ async function main() {
   // 視線だけ振るので、カートが画の片側に寄り、反対側が広く写る。
   // 縦長で撮ると画角が狭く、コースの脇にある被写体 (潜水艦あきしお) が外れるため。
   const camPan = Number(params.get('campan') ?? 0);
+
+  /**
+   * 発走前の演出のカメラ。t は演出の経過秒 (0 .. INTRO_LEN)。
+   *   0-3 秒   呉駅の正面をバスターミナルから映し、ゆっくり寄る
+   *   3-7.8 秒 呉駅を背にしたカートの群れを映し (カメラ → カート → 呉駅 が一直線)、
+   *            カートのまわりを 180 度回る
+   *   7.8-9 秒 自分のカートの追走カメラの位置へなめらかにつなぐ
+   */
+  const station = kureStationView(terrain);
+  function introCamera(t: number) {
+    const ease = (u: number) => u * u * (3 - 2 * u);
+    if (t < 3) {
+      const u = ease(t / 3);
+      const pos = station.facade.clone().addScaledVector(station.front, lerp(95, 62, u)).addScaledVector(station.right, lerp(-18, 6, u));
+      pos.y += lerp(4, 1, u);
+      camera.position.copy(pos);
+      camera.lookAt(station.facade.x, station.facade.y + 2, station.facade.z);
+      camera.fov = 60; camera.updateProjectionMatrix();
+      return;
+    }
+    // カートの群れの中心
+    const c = new THREE.Vector3();
+    for (const k of karts) c.add(new THREE.Vector3(k.x, k.y, k.z));
+    c.multiplyScalar(1 / karts.length);
+    // 呉駅と反対側 (カメラ → カート → 呉駅) から始めて 180 度回る。回る向きは、終わりが
+    // 追走カメラ (自分のカートの後ろ) に近くなるほうにする
+    const away = new THREE.Vector3(c.x - station.facade.x, 0, c.z - station.facade.z).normalize();
+    const a0 = Math.atan2(away.x, away.z);
+    const fx = Math.cos(player.heading), fz = Math.sin(player.heading);
+    const aChase = Math.atan2(-fx, -fz);
+    const wrapA = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
+    const sign = Math.abs(wrapA(a0 + Math.PI - aChase)) <= Math.abs(wrapA(a0 - Math.PI - aChase)) ? 1 : -1;
+    // START の看板 (高さ 7.5m) の上を越えるよう、回り始めは高く、回り終わりで追走カメラの高さへ下りる
+    const R = 32;
+    const orbit = (u: number) => {
+      const a = a0 + sign * Math.PI * ease(u);
+      return new THREE.Vector3(c.x + Math.sin(a) * R, c.y + lerp(12, 5, ease(u)), c.z + Math.cos(a) * R);
+    };
+    if (t < 7.8) {
+      const u = (t - 3) / 4.8;
+      camera.position.copy(orbit(u));
+      camera.lookAt(c.x, c.y + 2.2, c.z);
+      camera.fov = 62; camera.updateProjectionMatrix();
+      camPos.copy(camera.position);
+      camLook.set(c.x, c.y + 2.2, c.z);
+      return;
+    }
+    // 追走カメラへつなぐ (updateCamera と同じ置き方)
+    const u = ease(Math.min(1, (t - 7.8) / 1.2));
+    const chase = new THREE.Vector3(player.x - fx * 7.5, player.y + 3.2, player.z - fz * 7.5);
+    const look = new THREE.Vector3(player.x + fx * 6, player.y + 1.2, player.z + fz * 6);
+    const from = orbit(1);
+    camPos.copy(from.lerp(chase, u));
+    camLook.copy(new THREE.Vector3(c.x, c.y + 2.2, c.z).lerp(look, u));
+    camera.position.copy(camPos);
+    camera.lookAt(camLook);
+    camera.fov = lerp(62, 68, u); camera.updateProjectionMatrix();
+  }
 
   function updateCamera(dt: number, lookBack: boolean) {
     const fx = Math.cos(player.heading), fz = Math.sin(player.heading);

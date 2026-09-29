@@ -621,7 +621,7 @@
    "name": "寺迫公園",
    "kind": "grove",
    "trees": 23,
-   "comment": "輪郭は OpenStreetMap (ODbL) の way 973036338 を間引いたもの。面積 7551m²、コースから 253m。",
+   "comment": "輪郭は OpenStreetMap (ODbL) の way 973036338 を間引いたもの。面積 7551m²、コースから 252m。",
    "ring": [
     [
      34.246201,
@@ -681,7 +681,7 @@
    "name": "マリンパーク川原石",
    "kind": "lawn",
    "trees": 22,
-   "comment": "輪郭は OpenStreetMap (ODbL) の way 972579842 を間引いたもの。面積 30322m²、コースから 396m。",
+   "comment": "輪郭は OpenStreetMap (ODbL) の way 972579842 を間引いたもの。面積 30322m²、コースから 395m。",
    "ring": [
     [
      34.245842,
@@ -869,7 +869,7 @@
    "name": "大和波止場公園",
    "kind": "lawn",
    "trees": 14,
-   "comment": "輪郭は OpenStreetMap (ODbL) の way 1104936766 を間引いたもの。面積 19017m²、コースから 68m。",
+   "comment": "輪郭は OpenStreetMap (ODbL) の way 1104936766 を間引いたもの。面積 19017m²、コースから 67m。",
    "ring": [
     [
      34.240215,
@@ -973,7 +973,7 @@
    "name": "金毘羅山公園",
    "kind": "grove",
    "trees": 8,
-   "comment": "輪郭は OpenStreetMap (ODbL) の way 1104660708 を間引いたもの。面積 2622m²、コースから 148m。",
+   "comment": "輪郭は OpenStreetMap (ODbL) の way 1104660708 を間引いたもの。面積 2622m²、コースから 149m。",
    "ring": [
     [
      34.245441,
@@ -1065,7 +1065,7 @@
    "name": "二河川公園",
    "kind": "lawn",
    "trees": 2,
-   "comment": "輪郭は OpenStreetMap (ODbL) の way 479340499 を間引いたもの。面積 2290m²、コースから 279m。",
+   "comment": "輪郭は OpenStreetMap (ODbL) の way 479340499 を間引いたもの。面積 2290m²、コースから 280m。",
    "ring": [
     [
      34.240916,
@@ -1141,7 +1141,7 @@
    "name": "アレイからすこじま",
    "kind": "lawn",
    "trees": 2,
-   "comment": "輪郭は OpenStreetMap (ODbL) の way 1015996780 を間引いたもの。面積 2390m²、コースから 12m。",
+   "comment": "輪郭は OpenStreetMap (ODbL) の way 1015996780 を間引いたもの。面積 2390m²、コースから 13m。",
    "ring": [
     [
      34.226316,
@@ -1193,7 +1193,7 @@
    "name": "二河川公園",
    "kind": "lawn",
    "trees": 2,
-   "comment": "輪郭は OpenStreetMap (ODbL) の way 1016062679 を間引いたもの。面積 2845m²、コースから 190m。",
+   "comment": "輪郭は OpenStreetMap (ODbL) の way 1016062679 を間引いたもの。面積 2845m²、コースから 81m。",
    "ring": [
     [
      34.249202,
@@ -1229,7 +1229,7 @@
    "name": "二河川公園",
    "kind": "lawn",
    "trees": 2,
-   "comment": "輪郭は OpenStreetMap (ODbL) の way 1104666599 を間引いたもの。面積 2468m²、コースから 49m。",
+   "comment": "輪郭は OpenStreetMap (ODbL) の way 1104666599 を間引いたもの。面積 2468m²、コースから 127m。",
    "ring": [
     [
      34.247852,

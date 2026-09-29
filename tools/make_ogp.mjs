@@ -14,8 +14,8 @@ const OUT = process.env.OUT ?? 'public';
 mkdirSync(OUT, { recursive: true });
 
 const CARDS = [
-  { file: 'ogp.png', title: 'KURE KART', sub: '呉グランプリ', lead: 'PLATEAU の3D都市モデルで走る、呉駅から音戸大橋まで 12.2km', foot: 'ブラウザで、いますぐ　/　インストール不要　/　最大8人のオンライン対戦' },
-  { file: 'ogp-en.png', title: 'KURE KART', sub: 'Kure Grand Prix', lead: 'Kure Station to the Ondo Bridge, 12.2 km, from MLIT’s Project PLATEAU', foot: 'Play in your browser  /  no install  /  online multiplayer for up to 8' },
+  { file: 'ogp.png', title: 'KURE KART', sub: '呉グランプリ', lead: 'PLATEAU の3D都市モデルで走る、呉駅から音戸大橋まで 12.8km', foot: 'ブラウザで、いますぐ　/　インストール不要　/　最大8人のオンライン対戦' },
+  { file: 'ogp-en.png', title: 'KURE KART', sub: 'Kure Grand Prix', lead: 'Kure Station to the Ondo Bridge, 12.8 km, from MLIT’s Project PLATEAU', foot: 'Play in your browser  /  no install  /  online multiplayer for up to 8' },
 ];
 
 const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });

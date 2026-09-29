@@ -440,8 +440,8 @@ const path = [];
   if (OPEN) path.push(smooth[smooth.length - 1]);
 }
 
-// ---------------- 9a. 跨線橋のかさ上げ (course.json の lifts) ----------------
-// DEM には橋の桁が入っていないので、線路をまたぐ所だけ路面を持ち上げる。
+// ---------------- 9a. 跨線橋のかさ上げ・アンダーパスの掘り下げ (course.json の lifts) ----------------
+// DEM には橋の桁も掘り割りも入っていないので、線路と交わる所だけ路面を上げ下げする (h が負なら下げる)。
 // 中心から前後 length/2 の範囲を、両端が 0 になる cos の山で上げる。
 for (const lf of course.lifts ?? []) {
   const [x, z] = toXZ(lf.lat, lf.lon);
@@ -452,7 +452,9 @@ for (const lf of course.lifts ?? []) {
     const i = c + d;
     if (i < 0 || i >= path.length) continue;
     const t = Math.min(1, (1 - Math.abs(d) / half) * 1.6);
-    path[i][2] = Math.max(path[i][2], lf.h * (0.5 - 0.5 * Math.cos(t * Math.PI)));
+    const v = lf.h * (0.5 - 0.5 * Math.cos(t * Math.PI));
+    // 正ならかさ上げ (跨線橋)、負なら掘り下げ (線路の下をくぐるアンダーパス)
+    path[i][2] = lf.h >= 0 ? Math.max(path[i][2], v) : Math.min(path[i][2], v);
   }
   console.log(`かさ上げ ${lf.name}: 経路 ${c} を中心に ±${half * 2}m、最高 ${lf.h}m (中心から ${Math.sqrt(bd).toFixed(1)}m)`);
 }

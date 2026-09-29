@@ -1,6 +1,8 @@
 // 実在ランドマーク
+//   宮原の造船所       — ジブクレーン・ドックと建造中の船体・大屋根の工場 (位置は OSM)
+//   呉駅               — 駅ビル (CREST の緑のアーチの入口・大屋根)。発走前の演出の背景
 //   潜水艦あきしお     — てつのくじら館 (海上自衛隊呉史料館) の前に陸揚げされた全長 76m の潜水艦
-//   アレイからすこじま — 目の前の岸壁に係留された海上自衛隊の潜水艦 (3 隻)
+//   アレイからすこじま — 目の前の岸壁に係留された海上自衛隊の護衛艦 (2 隻) と潜水艦 (3 隻)
 //   音戸大橋           — 音戸の瀬戸を渡る朱色のアーチ橋。コースはこの上を渡ってゴール
 //   第二音戸大橋       — 音戸大橋の北に並ぶ朱色の中路アーチ橋 (遠景)
 //   大和ミュージアム   — Unity プロジェクトの FBX から起こした GLB (public/models/yamato_museum.glb)
@@ -9,7 +11,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import railData from '../data/rail.json';
-import { llToXZ, assetUrl } from './geo';
+import { llToXZ, assetUrl, rng } from './geo';
 import type { Terrain } from './terrain';
 import type { Track } from './track';
 import { makeSignTexture } from './textures';
@@ -18,6 +20,8 @@ type LandmarkInfo = {
   name: string; lat: number; lon: number; headingDeg: number; excludeRadius: number;
   /** 建物を消す矩形 [中心の東へのずれ m, 南へのずれ m, 東西の半幅 m, 南北の半幅 m] */
   excludeRects?: [number, number, number, number][];
+  /** 正面 (headingDeg の向き) の前の建物を消す範囲 [正面から前へ m, 左右の半幅 m] (駅前の大屋根の下など) */
+  excludeFront?: [number, number];
   model?: string; radiusEW?: number; radiusNS?: number; speed?: number;
   from?: { lat: number; lon: number }; to?: { lat: number; lon: number }; path?: [number, number][];
 };
@@ -41,6 +45,17 @@ export function landmarkBlocksBuilding(ring: number[]): boolean {
       for (const [dx, dz, hx, hz] of info.excludeRects) {
         if (Math.abs(cx - lx - dx) < hx && Math.abs(cz - lz - dz) < hz) return true;
       }
+    }
+    if (info.excludeFront) {
+      const [lx, lz] = llToXZ(info.lat, info.lon);
+      const yaw = yawOfBearing(info.headingDeg);
+      const fx = Math.sin(yaw), fz = Math.cos(yaw);
+      let cx = 0, cz = 0;
+      const m = ring.length / 2;
+      for (let k = 0; k + 1 < ring.length; k += 2) { cx += ring[k]; cz += ring[k + 1]; }
+      cx /= m; cz /= m;
+      const along = (cx - lx) * fx + (cz - lz) * fz, side = (cx - lx) * fz - (cz - lz) * fx;
+      if (along > 0 && along < info.excludeFront[0] && Math.abs(side) < info.excludeFront[1]) return true;
     }
     if (!info.excludeRadius) continue;
     const [lx, lz] = llToXZ(info.lat, info.lon);
@@ -145,8 +160,111 @@ export function buildAkishio(terrain: Terrain): THREE.Group {
 }
 
 /**
- * アレイからすこじまの前の岸壁に係留された潜水艦。
- * 岸と平行な向きで、船体がまるごと水面に収まる位置のうち、公園に近い所から 3 隻並べる。
+ * 護衛艦 (独自モデル、汎用護衛艦の共通の形)。全長 151m・幅 18m。ローカル +y が上、艦首が -z、
+ * 水面が y = 0 (喫水より下は作らない)。艦首の単装砲、艦橋、背の高い格子マストとレーダーのドーム、
+ * 2 本の煙突、後部のヘリコプター格納庫と飛行甲板。艦首に艦番号。
+ */
+function destroyer(num: string): THREE.Group {
+  const g = new THREE.Group();
+  const LEN = 151, BEAM = 18.3, FREE = 7.5;   // 乾舷 (水面から甲板まで)
+  const gray = new THREE.MeshLambertMaterial({ color: 0x858c93 });
+  const dark = new THREE.MeshLambertMaterial({ color: 0x4d5359 });
+  const light = new THREE.MeshLambertMaterial({ color: 0xc9ced3 });
+  const add = (geo: THREE.BufferGeometry, mat: THREE.Material, x: number, y: number, z: number) => {
+    const m = new THREE.Mesh(geo, mat);
+    m.position.set(x, y, z);
+    m.castShadow = true;
+    g.add(m);
+    return m;
+  };
+  // 船体: 艦首 (u = 0) から艦尾 (u = 1) への断面を張る。艦首は鋭く、艦尾は角型
+  const N = 32;
+  const halfW = (u: number) => u < 0.4 ? (BEAM / 2) * Math.pow(Math.sin((u / 0.4) * Math.PI / 2), 0.8) : (BEAM / 2) * (1 - 0.18 * Math.max(0, (u - 0.75) / 0.25));
+  const deckY = (u: number) => FREE + 2.2 * Math.pow(Math.max(0, 0.3 - u) / 0.3, 1.5);
+  const SEC: [number, number][] = [[1, 1], [0.97, 0.5], [0.85, 0]];   // [横の倍率, 高さの倍率] 水面まで
+  const pos: number[] = [], idx: number[] = [];
+  const ring = SEC.length * 2 - 1;
+  for (let i = 0; i <= N; i++) {
+    const u = i / N, z = -LEN / 2 + u * LEN, w = Math.max(0.2, halfW(u)), top = deckY(u);
+    const pts: [number, number][] = [];
+    for (const [fx, fy] of SEC) pts.push([-w * fx, top * fy]);
+    for (let k = SEC.length - 2; k >= 0; k--) pts.push([w * SEC[k][0], top * SEC[k][1]]);
+    for (const [x, y] of pts) pos.push(x, y - 0.6, z);
+    if (i < N) { const a = i * ring, b = (i + 1) * ring; for (let k = 0; k < ring - 1; k++) idx.push(a + k, b + k, a + k + 1, a + k + 1, b + k, b + k + 1); }
+  }
+  { const a = N * ring; for (let k = 1; k < ring - 1; k++) idx.push(a, a + k + 1, a + k); }
+  const hg = new THREE.BufferGeometry();
+  hg.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  hg.setIndex(idx);
+  hg.computeVertexNormals();
+  const hull = new THREE.Mesh(hg, new THREE.MeshLambertMaterial({ color: 0x7c838a, side: THREE.DoubleSide }));
+  hull.castShadow = true;
+  g.add(hull);
+  // 甲板
+  {
+    const dp: number[] = [], di: number[] = [];
+    for (let i = 0; i <= N; i++) {
+      const u = i / N, z = -LEN / 2 + u * LEN, w = Math.max(0.2, halfW(u)) - 0.2, y = deckY(u) - 0.55;
+      dp.push(-w, y, z, w, y, z);
+      if (i < N) { const a = i * 2; di.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
+    }
+    const dg = new THREE.BufferGeometry();
+    dg.setAttribute('position', new THREE.Float32BufferAttribute(dp, 3));
+    dg.setIndex(di);
+    dg.computeVertexNormals();
+    g.add(new THREE.Mesh(dg, new THREE.MeshLambertMaterial({ color: 0x5f666d, side: THREE.DoubleSide })));
+  }
+  const D = FREE - 0.6;
+  // 艦首の単装砲
+  add(new THREE.BoxGeometry(4, 2.4, 5), gray, 0, D + 1.2, -LEN / 2 + 30);
+  const gun = add(new THREE.CylinderGeometry(0.22, 0.3, 7, 8), dark, 0, D + 1.8, -LEN / 2 + 25);
+  gun.rotation.x = Math.PI / 2 - 0.08;
+  // 艦橋と前部の上部構造
+  add(new THREE.BoxGeometry(12, 5, 22), gray, 0, D + 2.5, -LEN / 2 + 50);
+  add(new THREE.BoxGeometry(11, 4, 12), gray, 0, D + 7, -LEN / 2 + 46);
+  add(new THREE.BoxGeometry(12.5, 2.4, 7), gray, 0, D + 10.2, -LEN / 2 + 44);   // 艦橋
+  add(new THREE.BoxGeometry(12.6, 0.9, 7.1), dark, 0, D + 10.4, -LEN / 2 + 44 - 0.1); // 窓の帯
+  // 格子マスト (細い柱 4 本と横桁)、レーダーのドーム、アンテナ
+  const mz = -LEN / 2 + 55, mBase = D + 9;
+  for (const [dx, dz] of [[-2.2, -2], [2.2, -2], [-2.2, 2], [2.2, 2]]) {
+    const leg = add(new THREE.CylinderGeometry(0.18, 0.28, 22, 5), dark, dx * 0.6, mBase + 11, mz + dz * 0.6);
+    leg.rotation.z = -dx * 0.018; leg.rotation.x = dz * 0.018;
+  }
+  for (let k = 0; k < 6; k++) add(new THREE.BoxGeometry(5.2 - k * 0.5, 0.25, 0.25), dark, 0, mBase + 3 + k * 3.4, mz);
+  add(new THREE.BoxGeometry(8, 0.3, 0.3), dark, 0, mBase + 16, mz);            // ヤード
+  add(new THREE.SphereGeometry(1.6, 12, 8), light, 0, mBase + 19, mz);          // レーダーのドーム
+  for (const s of [-1, 1]) add(new THREE.SphereGeometry(1.1, 10, 8), light, s * 2.6, mBase + 12, mz + 1);
+  add(new THREE.CylinderGeometry(0.08, 0.12, 8, 4), dark, 0, mBase + 25, mz);   // 最上部のアンテナ
+  // 煙突 2 本と中央部の上部構造
+  add(new THREE.BoxGeometry(11, 4.5, 40), gray, 0, D + 2.25, -LEN / 2 + 84);
+  for (const fz of [-LEN / 2 + 72, -LEN / 2 + 96]) {
+    add(new THREE.BoxGeometry(5.5, 8, 7), gray, 0, D + 8, fz);
+    add(new THREE.BoxGeometry(5.6, 0.8, 7.1), dark, 0, D + 12.3, fz);
+  }
+  // 後部の格納庫と後檣
+  add(new THREE.BoxGeometry(13, 6.5, 18), gray, 0, D + 3.25, -LEN / 2 + 112);
+  add(new THREE.CylinderGeometry(0.2, 0.3, 12, 5), dark, 0, D + 12, -LEN / 2 + 106);
+  add(new THREE.SphereGeometry(1.2, 10, 8), light, 0, D + 18, -LEN / 2 + 106);
+  // 艦番号 (艦首の両舷)
+  const c = document.createElement('canvas');
+  c.width = 256; c.height = 128;
+  const ctx = c.getContext('2d')!;
+  ctx.fillStyle = '#7c838a'; ctx.fillRect(0, 0, 256, 128);
+  ctx.fillStyle = '#ffffff'; ctx.font = 'bold 96px "Segoe UI", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(num, 128, 68);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  for (const s of [-1, 1]) {
+    const plate = add(new THREE.PlaneGeometry(6, 3), new THREE.MeshBasicMaterial({ map: tex }), s * (halfW(0.12) + 0.05), D - 2.2, -LEN / 2 + 18);
+    plate.rotation.y = s * Math.PI / 2;
+    plate.castShadow = false;
+  }
+  return g;
+}
+
+/**
+ * アレイからすこじまの前の岸壁に係留された艦。潜水艦 3 隻と護衛艦 2 隻。
+ * 岸と平行な向きで、船体がまるごと水面に収まる位置のうち、公園に近い所から並べる (大きい護衛艦を先に)。
  */
 export function buildAlleySubs(terrain: Terrain): THREE.Group {
   const info = LM.alleySubs;
@@ -156,36 +274,354 @@ export function buildAlleySubs(terrain: Terrain): THREE.Group {
   // 岸に沿う向き (ax, az) と、それに直交する向き (sx, sz)
   const ax = Math.sin(yaw), az = Math.cos(yaw);
   const sx = -az, sz = ax;
-  const LEN = 84, BEAM = 9.1; // そうりゅう型
   // 船体の外周 (岸壁との隙間 4m を含む) がすべて水面か
-  const fits = (x: number, z: number) => {
-    for (let t = -0.5; t <= 0.5; t += 0.125) for (const o of [-BEAM / 2 - 4, 0, BEAM / 2 + 4]) {
-      if (!terrain.isWater(x + ax * LEN * t + sx * o, z + az * LEN * t + sz * o)) return false;
+  const fits = (x: number, z: number, len: number, beam: number) => {
+    for (let t = -0.5; t <= 0.5; t += 0.1) for (const o of [-beam / 2 - 4, 0, beam / 2 + 4]) {
+      if (!terrain.isWater(x + ax * len * t + sx * o, z + az * len * t + sz * o)) return false;
     }
     return true;
   };
-  const cand: { x: number; z: number; d: number }[] = [];
-  for (let u = -300; u <= 300; u += 8) for (let v = -300; v <= 300; v += 4) {
-    const x = cx + ax * u + sx * v, z = cz + az * u + sz * v;
-    if (fits(x, z)) cand.push({ x, z, d: Math.hypot(u * 0.6, v) });
+  const placed: { x: number; z: number; len: number; beam: number }[] = [];
+  const place = (len: number, beam: number, count: number, make: (k: number) => THREE.Object3D, lift: number) => {
+    const cand: { x: number; z: number; d: number }[] = [];
+    for (let u = -320; u <= 320; u += 8) for (let v = -320; v <= 320; v += 4) {
+      const x = cx + ax * u + sx * v, z = cz + az * u + sz * v;
+      if (fits(x, z, len, beam)) cand.push({ x, z, d: Math.hypot(u * 0.6, v) });
+    }
+    cand.sort((p, q) => p.d - q.d);
+    let n = 0;
+    for (const c of cand) {
+      if (n >= count) break;
+      // 既に置いた艦とは、横に (幅の和の半分 + 6m) か、縦に長さの和の半分 + 10m 以上離す
+      if (placed.some(p => {
+        const du = Math.abs((c.x - p.x) * ax + (c.z - p.z) * az), dv = Math.abs((c.x - p.x) * sx + (c.z - p.z) * sz);
+        return dv < (beam + p.beam) / 2 + 6 && du < (len + p.len) / 2 + 10;
+      })) continue;
+      placed.push({ x: c.x, z: c.z, len, beam });
+      const ship = make(n);
+      ship.position.set(c.x, terrain.WATER_LEVEL + lift, c.z);
+      ship.rotation.y = yaw + (n % 2 ? Math.PI : 0);
+      g.add(ship);
+      n++;
+    }
+    return n;
+  };
+  const nd = place(151, 18.3, 2, k => destroyer(['107', '110'][k] ?? '101'), 0);
+  // 潜水艦 (そうりゅう型)。船体の上 1/3 ほどが水面の上に出る
+  const ns = place(84, 9.1, 3, () => submarine(84, 9.1, { xRudder: true }), 9.1 * 0.18);
+  if (!nd && !ns) console.warn('アレイからすこじまの艦を置ける水面が見つかりませんでした');
+  return g;
+}
+
+/** 壁面の絵を canvas で描いてテクスチャにする */
+function canvasTexture(w: number, h: number, draw: (ctx: CanvasRenderingContext2D) => void, repeatX = 1): THREE.Texture {
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  const ctx = c.getContext('2d')!;
+  draw(ctx);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.repeat.set(repeatX, 1);
+  tex.anisotropy = 4;
+  return tex;
+}
+
+/**
+ * 呉駅の駅ビル (独自モデル)。バスターミナル側から見た正面の姿を起こす:
+ *   左 (南東) は低い棟 — 下はれんが色の壁に白い額縁の絵、上はベージュのタイルと窓の列
+ *   その中ほどに緑のアーチ枠のガラスの入口 (CREST)
+ *   右 (北西) は一段高いベージュのタイルの棟 — 大きなガラス窓の帯と、屋上の木のパーゴラ
+ *   正面には濃いグレーの大屋根 (バス乗り場のひさし) と白い柱
+ * ローカル座標: +x = 正面に向かって右 (北西)、+z = 正面 (バスターミナル側)、y = 地面から上。
+ * PLATEAU の LOD1 の駅ビル (高さ 15.3m の箱) は excludeRects で消す。
+ */
+export function buildKureStation(terrain: Terrain): THREE.Group {
+  const info = LM.kureStation;
+  const g = new THREE.Group();
+  const [x, z] = llToXZ(info.lat, info.lon);
+  g.position.set(x, terrain.groundHeight(x, z), z);
+  g.rotation.y = yawOfBearing(info.headingDeg);
+  const DEPTH = 30, FRONT = DEPTH / 2;
+  const beige = new THREE.MeshLambertMaterial({ color: 0xd9c9a8 });
+  const add = (geo: THREE.BufferGeometry, mat: THREE.Material | THREE.Material[], px: number, py: number, pz: number) => {
+    const m = new THREE.Mesh(geo, mat);
+    m.position.set(px, py, pz);
+    m.castShadow = true; m.receiveShadow = true;
+    g.add(m);
+    return m;
+  };
+  // 正面だけ絵を貼った箱 (BoxGeometry の面の順: +x, -x, +y, -y, +z, -z)
+  const facadeBox = (w: number, h: number, front: THREE.Material) => new THREE.Mesh(new THREE.BoxGeometry(w, h, DEPTH), [beige, beige, beige, beige, front, beige]);
+
+  // ---- 左の低い棟 (x = -46 .. 8, 高さ 15m) ----
+  const lowTex = canvasTexture(1024, 256, ctx => {
+    // 上 40%: ベージュのタイルと横長の窓の列
+    ctx.fillStyle = '#d7c7a4'; ctx.fillRect(0, 0, 1024, 256);
+    ctx.strokeStyle = 'rgba(120,100,70,0.25)'; ctx.lineWidth = 1;
+    for (let y = 0; y < 100; y += 6) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(1024, y); ctx.stroke(); }
+    ctx.fillStyle = '#44515c';
+    for (let x0 = 40; x0 < 1000; x0 += 86) ctx.fillRect(x0, 34, 60, 34);
+    // 下 60%: れんが色の壁と白い額縁の絵
+    ctx.fillStyle = '#8f4436'; ctx.fillRect(0, 100, 1024, 156);
+    ctx.strokeStyle = 'rgba(40,10,5,0.35)';
+    for (let y = 100; y < 256; y += 8) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(1024, y); ctx.stroke(); }
+    const colors = ['#8fb3c9', '#e7d9b5', '#9cc29a', '#d7a36b', '#b8a3cf'];
+    for (let k = 0, x0 = 60; x0 < 980; x0 += 150, k++) {
+      ctx.fillStyle = '#f4f1ea'; ctx.fillRect(x0, 128, 62, 70);
+      ctx.fillStyle = colors[k % colors.length]; ctx.fillRect(x0 + 8, 136, 46, 54);
+    }
+    ctx.fillStyle = '#e9e4da'; ctx.fillRect(0, 96, 1024, 6);   // 上下の境の白い帯
+  });
+  const low = facadeBox(54, 15, new THREE.MeshLambertMaterial({ map: lowTex }));
+  low.position.set(-19, 7.5, 0); low.castShadow = true; low.receiveShadow = true; g.add(low);
+
+  // ---- 右の高い棟 (x = 8 .. 46, 高さ 24m) ----
+  const highTex = canvasTexture(512, 512, ctx => {
+    ctx.fillStyle = '#dccdad'; ctx.fillRect(0, 0, 512, 512);
+    ctx.strokeStyle = 'rgba(120,100,70,0.22)'; ctx.lineWidth = 1;
+    for (let y = 0; y < 512; y += 7) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(512, y); ctx.stroke(); }
+    for (let x0 = 0; x0 < 512; x0 += 14) { ctx.beginPath(); ctx.moveTo(x0, 0); ctx.lineTo(x0, 512); ctx.stroke(); }
+    // 大きなガラス窓の帯 (2 段) と、上の小さな窓
+    ctx.fillStyle = '#56636e';
+    for (const x0 of [150, 330]) { ctx.fillRect(x0, 170, 130, 150); }
+    ctx.strokeStyle = '#c9c3b6'; ctx.lineWidth = 4;
+    for (const x0 of [150, 330]) { for (let k = 1; k < 3; k++) { ctx.beginPath(); ctx.moveTo(x0 + k * 43, 170); ctx.lineTo(x0 + k * 43, 320); ctx.stroke(); } ctx.beginPath(); ctx.moveTo(x0, 245); ctx.lineTo(x0 + 130, 245); ctx.stroke(); }
+    ctx.fillStyle = '#56636e';
+    for (const x0 of [330, 420]) ctx.fillRect(x0, 60, 60, 40);
+    // 下の階 (大屋根の下) は店のガラス
+    ctx.fillStyle = '#3d4852'; ctx.fillRect(0, 420, 512, 92);
+  });
+  const high = facadeBox(38, 24, new THREE.MeshLambertMaterial({ map: highTex }));
+  high.position.set(27, 12, 0); high.castShadow = true; high.receiveShadow = true; g.add(high);
+
+  // 屋上のパーゴラ (木の枠)
+  const woodMat = new THREE.MeshLambertMaterial({ color: 0x8a5a3c });
+  for (let k = 0; k <= 12; k++) {
+    const px = 9 + k * 3.1;
+    for (const pz of [FRONT - 1, -FRONT + 1]) add(new THREE.BoxGeometry(0.4, 4, 0.4), woodMat, px, 26, pz);
   }
-  cand.sort((p, q) => p.d - q.d);
-  const placed: { x: number; z: number }[] = [];
-  for (const c of cand) {
-    if (placed.length >= 3) break;
-    // 既に置いた艦とは、横に 16m か縦に 1 隻分以上離す
-    if (placed.some(p => {
-      const du = Math.abs((c.x - p.x) * ax + (c.z - p.z) * az), dv = Math.abs((c.x - p.x) * sx + (c.z - p.z) * sz);
-      return dv < 16 && du < LEN + 10;
-    })) continue;
-    placed.push(c);
-    const sub = submarine(LEN, BEAM, { xRudder: true });
-    // 船体の上 1/3 ほどが水面の上に出る
-    sub.position.set(c.x, terrain.WATER_LEVEL + BEAM * 0.18, c.z);
-    sub.rotation.y = yaw + (placed.length % 2 ? 0 : Math.PI);
-    g.add(sub);
+  for (const pz of [FRONT - 1, -FRONT + 1]) add(new THREE.BoxGeometry(38, 0.5, 0.5), woodMat, 27, 28, pz);
+  for (let k = 0; k <= 12; k++) add(new THREE.BoxGeometry(0.4, 0.4, DEPTH - 2), woodMat, 9 + k * 3.1, 28.2, 0);
+
+  // ---- CREST の入口 (緑のアーチ枠のガラス) ----
+  const ex = -16, ew = 17, eh = 15;
+  const glass = new THREE.MeshLambertMaterial({ color: 0x6f95b5, emissive: 0x1a2a38 });
+  const green = new THREE.MeshLambertMaterial({ color: 0x3f7f73 });
+  add(new THREE.BoxGeometry(ew, eh, 2), glass, ex, eh / 2, FRONT + 1);
+  const dome = add(new THREE.CylinderGeometry(ew / 2, ew / 2, 2, 24, 1, false, -Math.PI / 2, Math.PI), glass, ex, eh, FRONT + 1);
+  dome.rotation.x = Math.PI / 2;
+  const arch = add(new THREE.TorusGeometry(ew / 2 + 0.4, 0.55, 8, 32, Math.PI), green, ex, eh, FRONT + 2.1);
+  arch.rotation.z = 0;
+  for (const s of [-1, 1]) add(new THREE.BoxGeometry(1.1, eh, 1.1), green, ex + s * (ew / 2 + 0.4), eh / 2, FRONT + 2.1);
+  // ガラスの桟
+  const mullion = new THREE.MeshLambertMaterial({ color: 0xd8dde2 });
+  for (let k = -3; k <= 3; k++) add(new THREE.BoxGeometry(0.2, eh, 0.2), mullion, ex + k * 2.3, eh / 2, FRONT + 2.05);
+  for (const y of [5, 10]) add(new THREE.BoxGeometry(ew, 0.2, 0.2), mullion, ex, y, FRONT + 2.05);
+  // CREST の看板
+  const crestTex = canvasTexture(512, 128, ctx => {
+    ctx.fillStyle = '#f7f7f4'; ctx.fillRect(0, 0, 512, 128);
+    ctx.fillStyle = '#1d5fa8'; ctx.font = 'bold 84px "Segoe UI", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('CREST', 256, 68);
+  });
+  const crest = add(new THREE.PlaneGeometry(8, 2), new THREE.MeshBasicMaterial({ map: crestTex }), ex, eh + 1.5, FRONT + 2.15);
+  crest.castShadow = false;
+
+  // ---- 大屋根 (バス乗り場のひさし) と白い柱 ----
+  const roofMat = new THREE.MeshLambertMaterial({ color: 0x45484d });
+  add(new THREE.BoxGeometry(90, 0.9, 11), roofMat, 0, 5.8, FRONT + 5.5);
+  const colMat = new THREE.MeshLambertMaterial({ color: 0xf0f0ee });
+  for (let px = -42; px <= 42; px += 8.4) add(new THREE.CylinderGeometry(0.28, 0.28, 5.4, 8), colMat, px, 2.7, FRONT + 10.3);
+
+  // ---- 駅名の看板と屋上の広告塔 ----
+  const nameTex = canvasTexture(512, 64, ctx => {
+    ctx.fillStyle = '#2b2e33'; ctx.fillRect(0, 0, 512, 64);
+    ctx.fillStyle = '#ffffff'; ctx.font = 'bold 36px "Hiragino Sans", "Noto Sans JP", sans-serif'; ctx.textBaseline = 'middle';
+    ctx.fillText('呉駅', 24, 34);
+    ctx.font = 'bold 28px "Segoe UI", sans-serif'; ctx.fillText('KURE STATION', 130, 34);
+  });
+  add(new THREE.PlaneGeometry(12, 1.5), new THREE.MeshBasicMaterial({ map: nameTex }), -36, 7.2, FRONT + 0.1);
+  const bbTex = canvasTexture(512, 128, ctx => {
+    const gr = ctx.createLinearGradient(0, 0, 512, 0); gr.addColorStop(0, '#7fc4e8'); gr.addColorStop(1, '#2d7fb8');
+    ctx.fillStyle = gr; ctx.fillRect(0, 0, 512, 128);
+    ctx.fillStyle = '#ffffff'; ctx.font = 'bold 56px "Hiragino Sans", "Noto Sans JP", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('ようこそ 呉へ', 256, 66);
+  });
+  add(new THREE.PlaneGeometry(14, 3.5), new THREE.MeshBasicMaterial({ map: bbTex, side: THREE.DoubleSide }), -36, 17.5, FRONT - 3);
+  for (const s of [-1, 1]) add(new THREE.BoxGeometry(0.3, 3, 0.3), roofMat, -36 + s * 6, 16, FRONT - 3.2);
+  return g;
+}
+
+/**
+ * 呉駅の正面の中心 (高さ 10m) と、正面の向き (水平の単位ベクトル)。発走前の演出のカメラが使う。
+ */
+export function kureStationView(terrain: Terrain): { facade: THREE.Vector3; front: THREE.Vector3; right: THREE.Vector3 } {
+  const info = LM.kureStation;
+  const [x, z] = llToXZ(info.lat, info.lon);
+  const yaw = yawOfBearing(info.headingDeg);
+  const front = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw));
+  const right = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));
+  const facade = new THREE.Vector3(x, terrain.groundHeight(x, z) + 10, z).addScaledVector(front, 15);
+  return { facade, front, right };
+}
+
+/**
+ * 宮原の造船所 (独自モデル)。位置は OpenStreetMap のクレーン・ドック・大屋根 (data/landmarks.json の shipyard)。
+ *   ジブクレーン — 赤白の鉄塔 (高さ 45〜70m) と、斜めに突き出したジブ (腕) と吊り荷のワイヤー
+ *   ドック       — コンクリートの縁 (ドックの輪郭)、底の水面、中で建造中の船体 (赤い船底と灰色の舷側)
+ *   大屋根       — 屋根の大きな工場 (ベージュの壁と緑がかった屋根)
+ */
+export function buildShipyard(terrain: Terrain): THREE.Group {
+  const info = LM.shipyard as any;
+  const g = new THREE.Group();
+  if (!info) return g;
+  const rand = rng(1911);
+  const red = new THREE.MeshLambertMaterial({ color: 0xd2452f });
+  const white = new THREE.MeshLambertMaterial({ color: 0xf0f0ec });
+  const steel = new THREE.MeshLambertMaterial({ color: 0x5a6068 });
+  const concrete = new THREE.MeshLambertMaterial({ color: 0xb8b3a8 });
+  const wire = new THREE.MeshBasicMaterial({ color: 0x3a3f44 });
+
+  // ---- ジブクレーン ----
+  for (const [lat, lon] of info.cranes as [number, number][]) {
+    const [x, z] = llToXZ(lat, lon);
+    const c = new THREE.Group();
+    c.position.set(x, terrain.groundHeight(x, z), z);
+    c.rotation.y = rand() * Math.PI * 2;
+    const H = 42 + rand() * 22;
+    // 足元の門型の台 (白)
+    for (const [dx, dz] of [[-4, -4], [4, -4], [-4, 4], [4, 4]]) {
+      const leg = new THREE.Mesh(new THREE.BoxGeometry(1, 12, 1), white);
+      leg.position.set(dx, 6, dz);
+      c.add(leg);
+    }
+    const deck = new THREE.Mesh(new THREE.BoxGeometry(10, 1.5, 10), white);
+    deck.position.y = 12.5;
+    c.add(deck);
+    // 塔 (赤と白の帯)
+    const bands = 6;
+    for (let k = 0; k < bands; k++) {
+      const h = (H - 13) / bands;
+      const seg = new THREE.Mesh(new THREE.BoxGeometry(3, h, 3), k % 2 ? white : red);
+      seg.position.y = 13 + h * (k + 0.5);
+      seg.castShadow = true;
+      c.add(seg);
+    }
+    // 運転室と機械室
+    const cab = new THREE.Mesh(new THREE.BoxGeometry(5, 4, 7), white);
+    cab.position.set(0, H + 1, -1);
+    cab.castShadow = true;
+    c.add(cab);
+    // ジブ (腕): 斜め上へ 40〜55m
+    const L = 40 + rand() * 15, lift = 0.35 + rand() * 0.35;
+    const jib = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.6, L), rand() < 0.5 ? red : white);
+    jib.position.set(0, H + 2 + Math.sin(lift) * L / 2, Math.cos(lift) * L / 2);
+    jib.rotation.x = -lift;
+    jib.castShadow = true;
+    c.add(jib);
+    // 先端から吊り荷のワイヤーとフック
+    const tipY = H + 2 + Math.sin(lift) * L, tipZ = Math.cos(lift) * L;
+    const drop = tipY - 10 - rand() * 15;
+    const w = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, drop, 4), wire);
+    w.position.set(0, tipY - drop / 2, tipZ);
+    c.add(w);
+    const hook = new THREE.Mesh(new THREE.BoxGeometry(1.4, 1.4, 1.4), steel);
+    hook.position.set(0, tipY - drop, tipZ);
+    c.add(hook);
+    // 後ろのカウンターウエイト
+    const cw = new THREE.Mesh(new THREE.BoxGeometry(4, 3, 6), steel);
+    cw.position.set(0, H + 1, -8);
+    c.add(cw);
+    g.add(c);
   }
-  if (!placed.length) console.warn('アレイからすこじまの潜水艦を置ける水面が見つかりませんでした');
+
+  // ---- ドック ----
+  for (const dock of info.docks as { name: string; ring: [number, number][] }[]) {
+    const pts = dock.ring.map(([la, lo]) => { const [px, pz] = llToXZ(la, lo); return new THREE.Vector2(px, pz); });
+    if (pts.length < 3) continue;
+    let cx = 0, cz = 0;
+    for (const p of pts) { cx += p.x; cz += p.y; }
+    cx /= pts.length; cz /= pts.length;
+    const ground = terrain.groundHeight(cx, cz);
+    // 底の水面 (ドックの輪郭を少し内側へ縮めたもの) と、縁のコンクリートの壁
+    const shape = new THREE.Shape(pts.map(p => new THREE.Vector2(p.x - cx, -(p.y - cz))));
+    const floor = new THREE.Mesh(new THREE.ShapeGeometry(shape), new THREE.MeshLambertMaterial({ color: 0x3d5f73 }));
+    floor.rotation.x = -Math.PI / 2;
+    floor.position.set(cx, ground + 0.25, cz);
+    floor.receiveShadow = true;
+    g.add(floor);
+    for (let i = 0; i < pts.length; i++) {
+      const a = pts[i], b = pts[(i + 1) % pts.length];
+      const len = a.distanceTo(b);
+      const wall = new THREE.Mesh(new THREE.BoxGeometry(len, 2.2, 3), concrete);
+      wall.position.set((a.x + b.x) / 2, ground + 1.1, (a.y + b.y) / 2);
+      wall.rotation.y = -Math.atan2(b.y - a.y, b.x - a.x);
+      wall.castShadow = true;
+      g.add(wall);
+    }
+    // 建造中の船体: ドックの長い辺に沿って置く (船底の赤と、上の灰色)
+    let best = 0, dir = 0;
+    for (let i = 0; i < pts.length; i++) {
+      const a = pts[i], b = pts[(i + 1) % pts.length];
+      const len = a.distanceTo(b);
+      if (len > best) { best = len; dir = Math.atan2(b.y - a.y, b.x - a.x); }
+    }
+    const shipLen = Math.min(best * 0.72, 260), shipW = Math.min(40, shipLen * 0.16);
+    const hull = new THREE.Group();
+    const bottom = new THREE.Mesh(new THREE.BoxGeometry(shipLen, 9, shipW), new THREE.MeshLambertMaterial({ color: 0x9a3b2c }));
+    bottom.position.y = 4.5;
+    hull.add(bottom);
+    const side = new THREE.Mesh(new THREE.BoxGeometry(shipLen * 0.97, 8, shipW * 0.98), new THREE.MeshLambertMaterial({ color: 0x7d858c }));
+    side.position.y = 13;
+    hull.add(side);
+    // 艦首側を細くする (三角の箱)
+    const bowGeo = new THREE.CylinderGeometry(0.01, shipW / 2, 20, 3, 1);
+    const bow = new THREE.Mesh(bowGeo, new THREE.MeshLambertMaterial({ color: 0x7d858c }));
+    bow.rotation.z = Math.PI / 2;
+    bow.position.set(shipLen / 2 + 10, 12, 0);
+    hull.add(bow);
+    // 甲板の上のブロック (建造中の上部構造)
+    for (let k = 0; k < 4; k++) {
+      const blk = new THREE.Mesh(new THREE.BoxGeometry(10 + rand() * 12, 5 + rand() * 6, shipW * 0.7), k % 2 ? white : concrete);
+      blk.position.set((rand() - 0.5) * shipLen * 0.7, 19 + 3, 0);
+      hull.add(blk);
+    }
+    hull.traverse(o => { if ((o as THREE.Mesh).isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+    hull.position.set(cx, ground - 6, cz);
+    hull.rotation.y = -dir;
+    g.add(hull);
+  }
+
+  // ---- 大屋根の工場 ----
+  for (const shed of info.sheds as { name: string; ring: [number, number][]; h: number }[]) {
+    const pts = shed.ring.map(([la, lo]) => { const [px, pz] = llToXZ(la, lo); return new THREE.Vector2(px, pz); });
+    let cx = 0, cz = 0;
+    for (const p of pts) { cx += p.x; cz += p.y; }
+    cx /= pts.length; cz /= pts.length;
+    let best = 0, dir = 0;
+    for (let i = 0; i < pts.length; i++) {
+      const a = pts[i], b = pts[(i + 1) % pts.length];
+      if (a.distanceTo(b) > best) { best = a.distanceTo(b); dir = Math.atan2(b.y - a.y, b.x - a.x); }
+    }
+    const W = best, D = best * 0.9;
+    const s = new THREE.Group();
+    const wall = new THREE.Mesh(new THREE.BoxGeometry(W, shed.h, D), new THREE.MeshLambertMaterial({ color: 0xd9ccaa }));
+    wall.position.y = shed.h / 2;
+    s.add(wall);
+    // 切妻屋根: 妻側の三角形 (幅 D、高さ 9m) を長手方向 (x) へ押し出す
+    const tri = new THREE.Shape();
+    tri.moveTo(-D / 2 - 1, 0); tri.lineTo(D / 2 + 1, 0); tri.lineTo(0, 9); tri.lineTo(-D / 2 - 1, 0);
+    const roofGeo = new THREE.ExtrudeGeometry(tri, { depth: W + 2, bevelEnabled: false });
+    roofGeo.translate(0, 0, -(W + 2) / 2);
+    roofGeo.rotateY(Math.PI / 2);          // 押し出しの向き (z) を長手 (x) へ
+    const roof = new THREE.Mesh(roofGeo, new THREE.MeshLambertMaterial({ color: 0x8fa79a }));
+    roof.position.y = shed.h;
+    s.add(roof);
+    s.traverse(o => { if ((o as THREE.Mesh).isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+    s.position.set(cx, terrain.groundHeight(cx, cz), cz);
+    s.rotation.y = -dir;
+    g.add(s);
+  }
   return g;
 }
 

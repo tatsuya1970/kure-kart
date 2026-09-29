@@ -98,7 +98,27 @@ function line(name, h, ramp, step) {
 
 // 呉駅は地上駅。川原石側のトンネルを出て、国道31号の下をくぐって呉駅に入り、
 // 東は休山の下のトンネルへ入る。高架は川を渡る橋だけ。
-const kure = line('JR呉線', 6, 120, 60);
+const kure0 = line('JR呉線', 6, 120, 20);
+// 道路が線路の下をくぐる所 (アンダーパス)。線路は地面の高さのままで、道路 (コース) のほうが
+// 掘り下げられている (data/course.json の lifts で h が負)。ゲームでは道路を下げると地形も削れるので、
+// 線路の高さは削れた底からの高さになる。削った深さ h m だけ持ち上げて元の地面の高さに戻し、
+// 掘り割りの上を短い橋で渡す。ramp は削れた範囲 (道路の幅 + 斜面) の半分ほど。
+//   呉港線 (亀山橋西詰の先、高さ制限 2.6m) — コースは大和ミュージアムからここをくぐって北へ上がる
+// 地盤が海面から 3m ほどしか無いので、掘り下げは 3m (実物の高さ制限 2.6m とほぼ同じ)。
+// 近くの OSM の bridge=yes (このアンダーパスの線路の橋そのもの) による緩い上り下りは、
+// clear m 以内では取り消して、掘り割りの上だけを渡す。
+const UNDERPASSES = [{ name: '呉港線', lat: 34.24310, lon: 132.55975, h: 3.1, ramp: 30, clear: 130 }];
+const kure = kure0.map(p => {
+  let h = p.h;
+  for (const u of UNDERPASSES) {
+    const d = Math.hypot((p.lat - u.lat) * ky, (p.lon - u.lon) * kx);
+    if (d >= u.clear) continue;
+    const t = Math.max(0, 1 - d / u.ramp);
+    h = +(u.h * Math.min(1, t * 2.2)).toFixed(2);
+  }
+  return { ...p, h };
+});
+for (const u of UNDERPASSES) console.log(`アンダーパス ${u.name}: 掘り割りの上を渡る橋 (削れた底から ${u.h}m、前後 ${u.ramp}m)`);
 
 writeFileSync('data/rail.json', JSON.stringify({
   comment: '呉市内の鉄道の実在位置 (緯度経度)。線形は OpenStreetMap (ODbL) の JR呉線から取った。h は地面からの高さ (m)。新幹線は通っていないので shinkansen は null。tools/build_rail.mjs が生成。',

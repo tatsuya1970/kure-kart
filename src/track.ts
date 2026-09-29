@@ -179,7 +179,13 @@ export class Track {
       }
       for (let i = 0; i < n; i++) this.elev[i] = raw[i];
     }
-    for (let i = 0; i < n; i++) this.py[i] = cur[i] + 0.35 + this.elev[i];
+    for (let i = 0; i < n; i++) {
+      this.py[i] = cur[i] + 0.35 + this.elev[i];
+      // 掘り下げ (線路の下をくぐるアンダーパス) でも、海の水面より下には下げない。
+      // 呉の埋立地は海面から 2〜3m しか無く、DEM にも掘り割りのくぼみが入っているので、
+      // そのまま下げると路面が水に沈む
+      if (this.elev[i] < 0) this.py[i] = Math.max(this.py[i], terrain.WATER_LEVEL + 1.0);
+    }
     // 空間ハッシュ
     for (let i = 0; i < n; i++) {
       const key = this.hkey(this.px[i], this.pz[i]);
