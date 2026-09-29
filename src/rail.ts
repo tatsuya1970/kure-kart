@@ -260,6 +260,8 @@ export function buildRail(terrain: Terrain, track: Track): RailSystem {
   /** 地上の線路がコースの路面に乗る所は路面の高さに合わせる (今のコースには無い) */
   const onCourse = (x: number, z: number) => {
     const nr = track.nearest(x, z, -1, false);
+    // 跨線橋 (コースが高架でまたぐ所) や掘り下げた所は踏切ではないので、線路は地面のまま
+    if (nr.idx >= 0 && Math.abs(track.elev[nr.idx]) > 1.5) return -1;
     return nr.idx >= 0 && nr.dist < 40 && Math.abs(nr.lateral) < track.hw[nr.idx] + 5 ? nr.idx : -1;
   };
   const railHeight = (emb: number) => (x: number, z: number, el: number) => {
