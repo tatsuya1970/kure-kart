@@ -384,9 +384,9 @@ export function buildKureStation(terrain: Terrain): THREE.Group {
     for (let x0 = 0; x0 < 512; x0 += 14) { ctx.beginPath(); ctx.moveTo(x0, 0); ctx.lineTo(x0, 512); ctx.stroke(); }
     // 大きなガラス窓の帯 (2 段) と、上の小さな窓
     ctx.fillStyle = '#56636e';
-    for (const x0 of [150, 330]) { ctx.fillRect(x0, 170, 130, 150); }
+    for (const x0 of [150, 330]) { ctx.fillRect(x0, 110, 130, 150); }
     ctx.strokeStyle = '#c9c3b6'; ctx.lineWidth = 4;
-    for (const x0 of [150, 330]) { for (let k = 1; k < 3; k++) { ctx.beginPath(); ctx.moveTo(x0 + k * 43, 170); ctx.lineTo(x0 + k * 43, 320); ctx.stroke(); } ctx.beginPath(); ctx.moveTo(x0, 245); ctx.lineTo(x0 + 130, 245); ctx.stroke(); }
+    for (const x0 of [150, 330]) { for (let k = 1; k < 3; k++) { ctx.beginPath(); ctx.moveTo(x0 + k * 43, 110); ctx.lineTo(x0 + k * 43, 260); ctx.stroke(); } ctx.beginPath(); ctx.moveTo(x0, 185); ctx.lineTo(x0 + 130, 185); ctx.stroke(); }
     ctx.fillStyle = '#56636e';
     for (const x0 of [330, 420]) ctx.fillRect(x0, 60, 60, 40);
     // 下の階 (大屋根の下) は店のガラス
@@ -434,13 +434,27 @@ export function buildKureStation(terrain: Terrain): THREE.Group {
   for (let px = -42; px <= 42; px += 8.4) add(new THREE.CylinderGeometry(0.28, 0.28, 5.4, 8), colMat, px, 2.7, FRONT + 10.3);
 
   // ---- 駅名の看板と屋上の広告塔 ----
-  const nameTex = canvasTexture(512, 64, ctx => {
-    ctx.fillStyle = '#2b2e33'; ctx.fillRect(0, 0, 512, 64);
-    ctx.fillStyle = '#ffffff'; ctx.font = 'bold 36px "Hiragino Sans", "Noto Sans JP", sans-serif'; ctx.textBaseline = 'middle';
-    ctx.fillText('呉駅', 24, 34);
-    ctx.font = 'bold 28px "Segoe UI", sans-serif'; ctx.fillText('KURE STATION', 130, 34);
+  // 駅名は大屋根のすぐ上、ベージュのタイルの棟の正面に大きく「JR 呉 駅  KURE STATION」
+  // (文字は銀色の切り文字。背景はタイルの壁の色のまま)
+  const nameTex = canvasTexture(1024, 128, ctx => {
+    ctx.fillStyle = '#d6c8a8'; ctx.fillRect(0, 0, 1024, 128);
+    // JR のマーク (青の四角に白抜き)
+    ctx.fillStyle = '#1f5fb4'; ctx.fillRect(28, 26, 92, 76);
+    ctx.fillStyle = '#ffffff'; ctx.font = 'bold italic 58px "Segoe UI", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('JR', 74, 66);
+    // 呉　駅
+    const letter = (text: string, x: number, font: string) => {
+      ctx.font = font;
+      ctx.fillStyle = '#4a4e55'; ctx.fillText(text, x + 3, 69);   // 影
+      ctx.lineWidth = 5; ctx.strokeStyle = '#6d7178'; ctx.strokeText(text, x, 66);   // 縁 (ベージュの壁で文字が沈まないように)
+      ctx.fillStyle = '#ffffff'; ctx.fillText(text, x, 66);
+    };
+    letter('呉', 225, 'bold 88px "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif');
+    letter('駅', 355, 'bold 88px "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif');
+    letter('KURE STATION', 720, 'bold 70px "Segoe UI", "Arial", sans-serif');
   });
-  add(new THREE.PlaneGeometry(12, 1.5), new THREE.MeshBasicMaterial({ map: nameTex }), -36, 7.2, FRONT + 0.1);
+  const nameBoard = add(new THREE.PlaneGeometry(34, 4.25), new THREE.MeshBasicMaterial({ map: nameTex }), 27, 8.4, FRONT + 0.08);
+  nameBoard.castShadow = false;
   const bbTex = canvasTexture(512, 128, ctx => {
     const gr = ctx.createLinearGradient(0, 0, 512, 0); gr.addColorStop(0, '#7fc4e8'); gr.addColorStop(1, '#2d7fb8');
     ctx.fillStyle = gr; ctx.fillRect(0, 0, 512, 128);
