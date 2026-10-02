@@ -1057,11 +1057,11 @@ async function main() {
     const ease = (u: number) => u * u * (3 - 2 * u);
     if (t < 3) {
       const u = ease(t / 3);
-      const pos = station.facade.clone().addScaledVector(station.front, lerp(95, 62, u)).addScaledVector(station.right, lerp(-18, 6, u));
+      const pos = station.facade.clone().addScaledVector(station.front, lerp(95, 62, u)).addScaledVector(station.right, lerp(-18, 6, u) + camPan);
       pos.y += lerp(4, 1, u);
       camera.position.copy(pos);
-      camera.lookAt(station.facade.x, station.facade.y + 2, station.facade.z);
-      camera.fov = 60; camera.updateProjectionMatrix();
+      camera.lookAt(station.facade.x + station.right.x * camPan, station.facade.y + 2, station.facade.z + station.right.z * camPan);  // ?campan=<m> で駅の正面の見る所を右へずらす (縦長で撮るとき)
+      camera.fov = 60 + fovAdd; camera.updateProjectionMatrix();
       return;
     }
     // カートの群れの中心
@@ -1086,7 +1086,7 @@ async function main() {
       const u = (t - 3) / 4.8;
       camera.position.copy(orbit(u));
       camera.lookAt(c.x, c.y + 2.2, c.z);
-      camera.fov = 62; camera.updateProjectionMatrix();
+      camera.fov = 62 + fovAdd; camera.updateProjectionMatrix();
       camPos.copy(camera.position);
       camLook.set(c.x, c.y + 2.2, c.z);
       return;
@@ -1100,7 +1100,7 @@ async function main() {
     camLook.copy(new THREE.Vector3(c.x, c.y + 2.2, c.z).lerp(look, u));
     camera.position.copy(camPos);
     camera.lookAt(camLook);
-    camera.fov = lerp(62, 68, u); camera.updateProjectionMatrix();
+    camera.fov = lerp(62, 68, u) + fovAdd; camera.updateProjectionMatrix();
   }
 
   function updateCamera(dt: number, lookBack: boolean) {

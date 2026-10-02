@@ -426,8 +426,11 @@ export class Track {
       g.add(this.gate(0, makeBannerTexture(), 4.5, 2));
     }
     // ---- 地名看板 ----
+    // ?nogate=<略称>,... で看板を出さない (撮影用。プロモ動画に入れない名所の看板を消す)
+    const noGate = (new URLSearchParams(location.search).get('nogate') ?? '').split(',').filter(Boolean);
     for (const l of this.labels) {
       if (l.idx < 30 || l.idx > n - 30) continue; // スタート / ゴールゲートと重なる
+      if (noGate.includes(l.short)) continue;
       g.add(this.gate(l.idx, makeSignTexture(l.name, l.sub), 2.2, 2));
     }
     return g;

@@ -320,9 +320,9 @@
      12
     ]
    ],
-   "comment": "呉駅の駅ビルの独自モデル (src/landmarks.ts の buildKureStation)。lat / lon は PLATEAU の LOD1 の駅ビル (高さ 15.3m、長さ約 92m × 奥行き 30m、長手は北西 - 南東) の中心で、headingDeg は正面 (バスターミナル側) の方位。LOD1 の箱は excludeRects (重心が中心から 12m 以内) で消す。発走前の演出のカメラはこの正面を映す。 excludeFront は正面の前 35m・左右 50m の建物 (大屋根の下のバス待合の小屋) を消す範囲。",
+   "comment": "呉駅の駅ビルの独自モデル (src/landmarks.ts の buildKureStation)。lat / lon は PLATEAU の LOD1 の駅ビル (高さ 15.3m、長さ約 92m × 奥行き 30m、長手は北西 - 南東) の中心で、headingDeg は正面 (バスターミナル側) の方位。LOD1 の箱は excludeRects (重心が中心から 12m 以内) で消す。発走前の演出のカメラはこの正面を映す。 excludeFront は正面の前 75m・左右 50m の建物 (大屋根の下のバス待合の小屋) を消す範囲。",
    "excludeFront": [
-    35,
+    75,
     50
    ]
   },
