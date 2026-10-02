@@ -18,6 +18,7 @@ data/osm/query.txt
 videos/clips*
 videos/*/renders
 videos/*/snapshots
+snapshots/
 videos/*/assets/*.mp4
 videos/*/.hyperframes
 videos/*/.media
