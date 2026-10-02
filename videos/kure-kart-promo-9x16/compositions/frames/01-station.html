@@ -1,0 +1,262 @@
+<template>
+  <div data-hf-id="hf-efjx" id="root" data-composition-id="01-station" data-width="1080" data-height="1920" data-start="0" data-duration="4">
+    <!-- Footage (assets/station.mp4, 4.0s, 1080x1920, full-bleed, full brightness) is the ground. -->
+    <!-- approved frame video hoisted by assemble-index -->
+
+    <!-- Track 1 — plate layer over the footage: 75% navy band (scene 2) + upward scrim (scene 3+) -->
+    <div data-hf-id="hf-agg3" class="clip station01-layer" id="station01-ground" data-start="0" data-duration="4" data-track-index="1">
+      <div data-hf-id="hf-2hx6" class="station01-scrim" id="station01-scrim"></div>
+      <div data-hf-id="hf-3iy6" class="station01-band" id="station01-band"></div>
+    </div>
+
+    <!-- Track 2a — Scene 2 copy, cleared by a hard cut at 2.5s -->
+    <div data-hf-id="hf-1p8u" class="clip station01-layer" id="station01-type" data-start="1.5" data-duration="1" data-track-index="2">
+      <div data-hf-id="hf-cddo" class="station01-line">
+        <span data-hf-id="hf-dwih" class="station01-mask" id="station01-m1"><span data-hf-id="hf-2sd1" class="station01-word" id="station01-w1">実在の、</span></span><span data-hf-id="hf-hhn2" class="station01-mask station01-open" id="station01-m2"><span data-hf-id="hf-o823" class="station01-word" id="station01-w2">呉。</span></span>
+      </div>
+    </div>
+
+    <!-- Track 2b — Scene 3/4 lockup: rule, wordmark payoff, label -->
+    <div data-hf-id="hf-1i6e" class="clip station01-layer" id="station01-lockup" data-start="2.5" data-duration="1.5" data-track-index="2">
+      <div data-hf-id="hf-0cor" class="station01-lock">
+        <div data-hf-id="hf-4cr9" class="station01-mark" id="station01-mark">
+          呉<span data-hf-id="hf-njci" class="station01-accent">グランプリ</span>
+        </div>
+        <div data-hf-id="hf-i5tu" class="station01-foot">
+          <span data-hf-id="hf-411b" class="station01-rule" id="station01-rule"></span>
+          <span data-hf-id="hf-3mxs" class="station01-label" id="station01-label">KURE KART</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    @font-face {
+      font-family: "Noto Sans JP";
+      src: url("assets/fonts/NotoSansJP-400.woff2") format("woff2");
+      font-weight: 400 500;
+      font-style: normal;
+      font-display: block;
+    }
+    @font-face {
+      font-family: "Noto Sans JP";
+      src: url("assets/fonts/NotoSansJP-700.woff2") format("woff2");
+      font-weight: 600 700;
+      font-style: normal;
+      font-display: block;
+    }
+    @font-face {
+      font-family: "Noto Sans JP";
+      src: url("assets/fonts/NotoSansJP-900.woff2") format("woff2");
+      font-weight: 800 900;
+      font-style: normal;
+      font-display: block;
+    }
+
+    #root {
+      position: relative;
+      width: 1080px;
+      height: 1920px;
+      overflow: hidden;
+      container-type: size;
+      /* the hoisted <video> mounts at the host root; keep the type stage above it */
+      z-index: 5;
+      font-family: "Noto Sans JP", sans-serif;
+      font-kerning: none;
+    }
+
+    .station01-layer {
+      position: absolute;
+      inset: 0;
+      width: 1080px;
+      height: 1920px;
+      pointer-events: none;
+    }
+
+    /* — dark plate: 75% navy band, ~18% of frame height (346px), lower third.
+         Spans y 1190–1536: clear of the bottom 12% phone-UI zone (>=1690) and the 1600 cutoff. — */
+    .station01-band {
+      position: absolute;
+      left: 0;
+      top: 1190px;
+      width: 1080px;
+      height: 346px;
+      background: rgba(11, 26, 42, 0.75);
+    }
+    .station01-scrim {
+      position: absolute;
+      left: 0;
+      top: 830px;
+      width: 1080px;
+      height: 360px;
+      background: linear-gradient(
+        to bottom,
+        rgba(11, 26, 42, 0) 0%,
+        rgba(11, 26, 42, 0.42) 56%,
+        rgba(11, 26, 42, 0.75) 100%
+      );
+      opacity: 0;
+    }
+
+    /* — scene 2: 「実在の、」「呉。」 seated in the band, lower-left third (one line, ~640px) — */
+    .station01-line {
+      position: absolute;
+      left: 60px;
+      top: 1308px;
+      white-space: nowrap;
+      font-size: 10cqw;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+    }
+    .station01-mask {
+      display: inline-block;
+      overflow: hidden;
+      vertical-align: bottom;
+    }
+    .station01-mask.station01-open {
+      overflow: visible;
+    }
+    .station01-word {
+      display: inline-block;
+      transform-origin: 0% 100%;
+    }
+
+    /* — scene 3/4: rule + wordmark payoff (~80% of width) + label — */
+    .station01-lock {
+      position: absolute;
+      left: 60px;
+      top: 1236px;
+      width: 870px;
+    }
+    .station01-mark {
+      font-size: 14cqw;
+      font-weight: 900;
+      line-height: 0.88;
+      letter-spacing: -0.04em;
+      color: #ffffff;
+      white-space: nowrap;
+      transform-origin: 0% 100%;
+    }
+    .station01-accent {
+      color: #ffd83d;
+    }
+    .station01-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      height: 34px;
+      margin-top: 60px;
+    }
+    .station01-rule {
+      display: block;
+      width: 36px;
+      height: 2px;
+      background: #ffd83d;
+      transform-origin: 0% 50%;
+    }
+    .station01-label {
+      display: block;
+      font-size: 2.4cqw;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      color: #c9d6e4;
+    }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    (function () {
+      var DUR = 4;
+      var el = function (id) {
+        return document.getElementById(id);
+      };
+
+      var band = el("station01-band");
+      var scrim = el("station01-scrim");
+      var m1 = el("station01-m1");
+      var m2 = el("station01-m2");
+      var w1 = el("station01-w1");
+      var w2 = el("station01-w2");
+      var rule = el("station01-rule");
+      var mark = el("station01-mark");
+      var label = el("station01-label");
+
+      /* ONE tempo grid drives every onset (kinetic-beat-slam: shared beat array). */
+      var PULSE = 0.1;
+      var BAND_IN = PULSE * 15; // 1.50 — scene 2: band wipes up
+      var W1 = PULSE * 16; // 1.60 — beat 1 「実在の、」
+      var W2 = PULSE * 19; // 1.90 — beat 2 「呉。」
+      var SCRIM = PULSE * 24.5; // 2.45 — plate extends upward for the payoff
+      var CUT = PULSE * 25; // 2.50 — HARD CUT word-swap, scene 3 begins
+      var POP = PULSE * 30; // 3.00 — scene 4: wordmark payoff
+      var LABEL = PULSE * 33; // 3.30 — small label
+
+      var tl = gsap.timeline({ paused: true });
+
+      /* ---- Scene 1 (0.0–1.5s): footage alone, zero type. Collapsed start states. ---- */
+      tl.set(band, { clipPath: "inset(100% 0% 0% 0%)" }, 0);
+      tl.set(scrim, { opacity: 0 }, 0);
+      tl.set([m1, m2], { opacity: 1 }, 0);
+
+      /* ---- Scene 2 (1.5–2.5s): band wipes up from below, two per-word beats land in it ---- */
+      tl.fromTo(
+        band,
+        { clipPath: "inset(100% 0% 0% 0%)" },
+        { clipPath: "inset(0% 0% 0% 0%)", duration: 0.4, ease: "power3.out" },
+        BAND_IN
+      );
+
+      // beat 1 — bottom-up masked rise, blur resolving sharp
+      tl.fromTo(
+        w1,
+        { yPercent: 70, opacity: 0, filter: "blur(14px)" },
+        { yPercent: 0, opacity: 1, filter: "blur(0px)", duration: 0.42, ease: "power4.out" },
+        W1
+      );
+
+      // beat 2 — oversized word scaling down to measure (distinct axis + ease)
+      tl.fromTo(
+        w2,
+        { scale: 1.45, opacity: 0, filter: "blur(12px)" },
+        { scale: 1, opacity: 1, filter: "blur(0px)", duration: 0.4, ease: "expo.out" },
+        W2
+      );
+
+      /* ---- Scene 3 (2.5–3.0s): HARD CUT word-swap — the line vanishes, the rule draws ---- */
+      tl.set([m1, m2], { opacity: 0 }, CUT);
+
+      // the dark plate grows upward so the payoff has its own ground
+      tl.fromTo(scrim, { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power2.out" }, SCRIM);
+
+      // 36x2 yellow rule stub drawn left -> right on the same baseline
+      tl.fromTo(rule, { scaleX: 0, opacity: 1 }, { scaleX: 1, duration: 0.4, ease: "power3.out" }, CUT);
+
+      /* ---- Scene 4 (3.0–4.0s): spring-pop payoff over the rule (smooth settle), then HELD ---- */
+      tl.fromTo(
+        mark,
+        { scale: 0.35, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.3)" },
+        POP
+      );
+      tl.fromTo(
+        label,
+        { x: -14, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.4, ease: "power2.out" },
+        LABEL
+      );
+
+      // pin the timeline to the full frame duration (no idle loop — the type holds dead still)
+      var span = { v: 0 };
+      tl.to(span, { v: 1, duration: DUR, ease: "none" }, 0);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["01-station"] = tl;
+      tl.seek(0);
+    })();
+  </script>
+</template>

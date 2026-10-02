@@ -1,0 +1,148 @@
+<template>
+  <div data-hf-id="hf-3qrz" id="root" data-composition-id="04-alley" data-width="1080" data-height="1920">
+    <style>
+      @font-face {
+        font-family: "Noto Sans JP";
+        src: url("assets/fonts/NotoSansJP-400.woff2") format("woff2");
+        font-weight: 400;
+        font-style: normal;
+        font-display: block;
+      }
+      @font-face {
+        font-family: "Noto Sans JP";
+        src: url("assets/fonts/NotoSansJP-700.woff2") format("woff2");
+        font-weight: 700;
+        font-style: normal;
+        font-display: block;
+      }
+      @font-face {
+        font-family: "Noto Sans JP";
+        src: url("assets/fonts/NotoSansJP-900.woff2") format("woff2");
+        font-weight: 900;
+        font-style: normal;
+        font-display: block;
+      }
+
+      #root {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        container-type: size;
+        font-family: "Noto Sans JP", sans-serif;
+      }
+
+      /* full-bleed ground layer: transparent over the hoisted footage, carries the seating wash */
+      [id="f04alley-ground"] {
+        position: absolute;
+        inset: 0;
+        background: transparent;
+      }
+
+      /* bottom-left seating wash for the nameplate only (footage stays the ground) */
+      [id="f04alley-wash"] {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 100cqw;
+        height: 48cqh;
+        background: linear-gradient(
+          to top right,
+          rgba(11, 26, 42, 0.46) 0%,
+          rgba(11, 26, 42, 0.2) 45%,
+          rgba(11, 26, 42, 0) 100%
+        );
+      }
+
+      [id="f04alley-plate-layer"] {
+        position: absolute;
+        inset: 0;
+      }
+
+      /* SHARED NAMEPLATE (03-museum / 04-alley / 05-ondo): left 6cqw, bottom 22cqh */
+      [id="f04alley-plate"] {
+        position: absolute;
+        left: 6cqw;
+        bottom: 22cqh;
+        display: inline-block;
+        padding: 3.2cqw 4.4cqw 3.4cqw 4cqw;
+        background: rgba(11, 26, 42, 0.75);
+        border-radius: 0;
+        will-change: transform, opacity;
+      }
+
+      [id="f04alley-rule"] {
+        width: 64px;
+        height: 3px;
+        background: #FFD83D;
+        margin-bottom: 2cqw;
+      }
+
+      /* 9 glyphs x 8.4cqw = 75.6cqw; plate 84cqw wide, right edge at 90cqw (< 94cqw safe) */
+      [id="f04alley-name"] {
+        margin: 0;
+        font-family: "Noto Sans JP", sans-serif;
+        font-size: 8.4cqw;
+        font-weight: 700;
+        line-height: 1.1;
+        color: #FFFFFF;
+        white-space: nowrap;
+      }
+
+      [id="f04alley-label"] {
+        margin-top: 1.4cqw;
+        font-family: "Noto Sans JP", sans-serif;
+        font-size: 2.2cqw;
+        font-weight: 400;
+        line-height: 1.5;
+        letter-spacing: 0.14em;
+        color: #C9D6E4;
+        white-space: nowrap;
+      }
+    </style>
+
+    <!-- Scene 1-3 ground: assets/alley.mp4 full-bleed, hoisted by the index -->
+
+    <div data-hf-id="hf-dahp" class="clip" id="f04alley-ground" data-start="0" data-duration="3.5" data-track-index="1">
+      <div data-hf-id="hf-tmok" id="f04alley-wash"></div>
+    </div>
+
+    <!-- Scene 2/3: shared lower-left nameplate, clear of the ships on the right-hand quay -->
+    <div data-hf-id="hf-8ujy" class="clip" id="f04alley-plate-layer" data-start="1.2" data-duration="2.3" data-track-index="2">
+      <div data-hf-id="hf-2q73" id="f04alley-plate">
+        <div data-hf-id="hf-fdcn" id="f04alley-rule"></div>
+        <h2 data-hf-id="hf-jvyp" id="f04alley-name">アレイからすこじま</h2>
+        <div data-hf-id="hf-jdx0" id="f04alley-label">護衛艦と潜水艦が並ぶ岸壁</div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      (function () {
+        var root = document.querySelector('[data-composition-id="04-alley"]');
+        if (!root) return;
+
+        var wash = root.querySelector('[id="f04alley-wash"]');
+        var plate = root.querySelector('[id="f04alley-plate"]');
+        var label = root.querySelector('[id="f04alley-label"]');
+
+        var tl = gsap.timeline({ paused: true });
+
+        // hold spine - Scene 1 (0.0-1.2s): footage only, ships along the quay, zero text
+        tl.to({}, { duration: 3.5 }, 0);
+
+        // Scene 2 (1.2s): the one move - nameplate (rule + h2) slide-up crossfade,
+        // seating wash crossfades in with it
+        tl.fromTo(wash, { opacity: 0 }, { opacity: 1, duration: 0.6, ease: "power3.out" }, 1.2);
+        tl.fromTo(plate, { y: 48, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 1.2);
+
+        // Scene 3 (2.0s): label fades in just below, then held to 3.5s
+        tl.fromTo(label, { opacity: 0 }, { opacity: 1, duration: 0.45, ease: "power1.out" }, 2.0);
+
+        window.__timelines = window.__timelines || {};
+        window.__timelines["04-alley"] = tl;
+      })();
+    </script>
+  </div>
+</template>

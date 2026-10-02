@@ -19,13 +19,14 @@ const HIRAGANA = Array.from({ length: 96 }, (_, i) => String.fromCharCode(0x3041
 const KATAKANA = Array.from({ length: 96 }, (_, i) => String.fromCharCode(0x30a1 + i)).join('');
 const SYMBOLS = '、。・「」『』（）［］〈〉ー〜…‥／＼％＋－×÷＝→←↑↓©℃　';
 const COPY = [
-  '実在の福山', '福山グランプリ', 'FUKUYAMA KART',
+  '実在の呉', '呉グランプリ', 'KURE KART',
   '最大8人', 'オンライン対戦',
-  'この街はつくり物じゃない', '国土交通省 PLATEAU 3D都市モデル 福山市 2020年度',
-  '芦田川大橋', 'Ashidagawa Ohashi Bridge',
-  '福山駅から', 'km', '県道22号', '鞆の浦',
-  'GOAL', '鞆の浦 常夜燈', '1859年 高さ11m', 'Tomonoura Joyato',
-  'tatsuya1970.github.io/fukuyama-kart',
+  '国土交通省 PLATEAU 3D都市モデル 呉市 2020年度',
+  '大和ミュージアム', 'Yamato Museum',
+  'アレイからすこじま', '護衛艦と潜水艦が並ぶ岸壁',
+  '戦艦大和', '呉湾をゆく',
+  'GOAL', '音戸大橋', 'Ondo Bridge', '音戸の瀬戸', '倉橋島',
+  'kure.citykart.jp',
   'ブラウザでいますぐ', 'インストール不要',
 ].join('');
 

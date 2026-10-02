@@ -540,7 +540,9 @@ src/main.ts       シーン構築・レース進行
 
 ## プロモ動画
 
-呉版のプロモ動画はまだ作っていません。撮影の仕組み（`?rec=1` で 1/30 秒ずつ進めて連番 PNG を撮る `tools/record_clip.mjs`、カットを並べる `tools/record_promo.mjs`、連番を mp4 にする `tools/clips_to_mp4.mjs`、使う文字だけに絞ったフォントを取る `tools/fetch_promo_font.mjs`）は福山版のまま残してあります。`tools/record_promo.mjs` のカットの位置（`idx`）と `tools/fetch_promo_font.mjs` の文言は福山版のものなので、呉版で作るときは直してください。
+呉版のプロモ動画（30 秒）は 16:9 と縦型 9:16 の 2 本あります。構成のソースは `videos/kure-kart-promo/` と `videos/kure-kart-promo-9x16/`（HyperFrames）、書き出した mp4 はそれぞれの `renders/` です（`renders/` は git に入れません）。流れは 呉駅のスタート → 大和ミュージアム → 宮原の造船所 → アレイからすこじま → 音戸大橋 → 音戸でゴール。
+
+素材はゲーム本体から撮り下ろします。`?rec=1` で 1/30 秒ずつ進めて連番 PNG を撮る `tools/record_clip.mjs`、カットを並べる `tools/record_promo.mjs`（カットの位置 `idx` は呉版）、連番を mp4 にする `tools/clips_to_mp4.mjs`、使う文字だけに絞ったフォントを取る `tools/fetch_promo_font.mjs` を使います。縦型は `OUT=videos/clips9x16 W=1080 H=1920 node tools/record_promo.mjs` で撮り、カットごとのクエリは環境変数 `Q_<クリップ名>` で上書きします（実際に使った値は `tools/record_promo.mjs` の先頭のコメントと `videos/kure-kart-promo-9x16/BRIEF.md`）。
 
 撮影用に足したクエリ:
 
@@ -550,6 +552,7 @@ src/main.ts       シーン構築・レース進行
 | `?fovadd=<度>` | 画角を広げる。three.js の `fov` は垂直画角なので、縦長で撮ると水平の見える範囲が 16:9 の半分以下 (102°→43°) になる |
 | `?campan=<m>` | カメラは後ろのまま**視線だけ横に振る**。縦長では画角が狭く、コースの脇の被写体が外れるため |
 | `?camk=<倍率>` | 追従カメラを硬くする (高速でもカートが小さくならない) |
+| `?nogate=<略称>,...` | その地名看板を出さない。プロモ動画に入れない名所の看板を撮影時だけ消す (例: `nogate=くじら館`) |
 | `?photo=<lat>,<lon>,<高さ>,<距離>,<方位>` + `?orbit=<度/秒>` | 撮影カメラ。OGP 画像の音戸大橋に使っている |
 
 ## ライセンス

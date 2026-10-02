@@ -1,0 +1,226 @@
+<template>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <style>
+    @font-face {
+      font-family: "Noto Sans JP";
+      src: url("assets/fonts/NotoSansJP-400.woff2") format("woff2");
+      font-weight: 400;
+      font-style: normal;
+      font-display: block;
+    }
+    @font-face {
+      font-family: "Noto Sans JP";
+      src: url("assets/fonts/NotoSansJP-700.woff2") format("woff2");
+      font-weight: 700;
+      font-style: normal;
+      font-display: block;
+    }
+    @font-face {
+      font-family: "Noto Sans JP";
+      src: url("assets/fonts/NotoSansJP-900.woff2") format("woff2");
+      font-weight: 900;
+      font-style: normal;
+      font-display: block;
+    }
+
+    #root {
+      position: absolute;
+      inset: 0;
+      width: 1080px;
+      height: 1920px;
+      overflow: hidden;
+      container-type: size;
+      font-family: "Noto Sans JP", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* --- full-bleed ground layer, riding over the hoisted start.mp4 --- */
+    .f02-start-scrim {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(11, 26, 42, 0.3) 0%,
+        rgba(11, 26, 42, 0.04) 30%,
+        rgba(11, 26, 42, 0.2) 50%,
+        rgba(11, 26, 42, 0.62) 100%
+      );
+      opacity: 0.5;
+    }
+
+    .f02-start-layer {
+      position: absolute;
+      inset: 0;
+    }
+
+    /* --- the navy 75% plate: lower band, inside the 12% keep-outs --- */
+    .f02-start-band {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 960px;
+      height: 620px;
+      background: rgba(11, 26, 42, 0.75);
+      border-top: 1px solid #2b4055;
+      transform-origin: 0% 50%;
+      will-change: transform;
+    }
+
+    .f02-start-inner {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 960px;
+      height: 620px;
+      padding: 0 6cqw;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* --- the eight driver chips (in-game kart colors), 2 rows of 4 --- */
+    .f02-start-chips {
+      display: grid;
+      grid-template-columns: repeat(4, 140px);
+      grid-auto-rows: 140px;
+      column-gap: 48px;
+      row-gap: 30px;
+    }
+    .f02-start-chip {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      box-sizing: border-box;
+      border: 4px solid #ffffff;
+      transform-origin: 50% 50%;
+      will-change: transform, opacity;
+    }
+    .f02-start-rule {
+      width: 8cqw;
+      height: 4px;
+      margin-top: 36px;
+      background: #ffd83d;
+      transform-origin: 50% 50%;
+      will-change: transform;
+    }
+
+    /* --- the copy, under the chip grid --- */
+    .f02-start-h2 {
+      margin-top: 26px;
+      font-size: 12cqw;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      color: #ffd83d;
+      transform-origin: 50% 50%;
+      will-change: transform, opacity;
+      white-space: nowrap;
+    }
+    .f02-start-label {
+      margin-top: 14px;
+      font-size: 3.4cqw;
+      font-weight: 400;
+      line-height: 1.4;
+      letter-spacing: 0.14em;
+      color: #c9d6e4;
+      will-change: transform, opacity;
+      white-space: nowrap;
+    }
+  </style>
+
+  <div data-hf-id="hf-dw6w" id="root" data-composition-id="02-start" data-width="1080" data-height="1920">
+    <!-- approved frame video (assets/start.mp4) is hoisted to the host root by assemble-index -->
+
+    <div data-hf-id="hf-7kyj" id="f02-start-scrim" class="clip f02-start-scrim" data-start="0" data-duration="3.5" data-track-index="1"></div>
+
+    <div data-hf-id="hf-8ww5" id="f02-start-strip" class="clip f02-start-layer" data-start="0.8" data-duration="2.7" data-track-index="2">
+      <div data-hf-id="hf-rr92" id="f02-start-band" class="f02-start-band"></div>
+      <div data-hf-id="hf-87gc" class="f02-start-inner">
+        <div data-hf-id="hf-gr99" class="f02-start-chips">
+          <div data-hf-id="hf-8ldg" class="f02-start-chip" style="background: #e63946"></div>
+          <div data-hf-id="hf-63zf" class="f02-start-chip" style="background: #c98a1b"></div>
+          <div data-hf-id="hf-5dg4" class="f02-start-chip" style="background: #8a5a2b"></div>
+          <div data-hf-id="hf-k113" class="f02-start-chip" style="background: #e9eef2"></div>
+          <div data-hf-id="hf-dtnt" class="f02-start-chip" style="background: #e07a5f"></div>
+          <div data-hf-id="hf-2qv7" class="f02-start-chip" style="background: #9bc53d"></div>
+          <div data-hf-id="hf-3pkq" class="f02-start-chip" style="background: #f1e3c3"></div>
+          <div data-hf-id="hf-2woe" class="f02-start-chip" style="background: #6b4423"></div>
+        </div>
+        <div data-hf-id="hf-y8eq" id="f02-start-rule" class="f02-start-rule"></div>
+        <div data-hf-id="hf-7o95" id="f02-start-h2" class="f02-start-h2">最大8人</div>
+        <div data-hf-id="hf-l3ot" id="f02-start-label" class="f02-start-label">オンライン対戦</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var tl = gsap.timeline({ paused: true });
+      var chips = gsap.utils.toArray("#f02-start-strip .f02-start-chip");
+
+      /* Seek-safe resting states for everything that arrives later. */
+      gsap.set("#f02-start-band", { scaleX: 0 });
+      gsap.set(chips, { scale: 0, opacity: 0, y: 24 });
+      gsap.set("#f02-start-rule", { scaleX: 0 });
+      gsap.set("#f02-start-h2", { scale: 0.72, opacity: 0, y: 16 });
+      gsap.set("#f02-start-label", { opacity: 0, y: 16 });
+
+      /* Scene 1 (0.0-0.8) - start.mp4 alone, eight karts launching from
+         the Kure Station grid. No type. The scrim deepens on the last beat
+         to bed the plate. */
+      tl.fromTo(
+        "#f02-start-scrim",
+        { opacity: 0.5 },
+        { opacity: 1, duration: 0.5, ease: "power2.out" },
+        0.6
+      );
+
+      /* Scene 2 (0.8-2.1) - the navy 75% plate wipes in from the left, then
+         the eight driver chips land one at a time, left-to-right, top row
+         first (per-item stagger, spring-pop entrance on a smooth power3
+         settle). Eighth lands ~2.1. */
+      tl.fromTo(
+        "#f02-start-band",
+        { scaleX: 0 },
+        { scaleX: 1, duration: 0.5, ease: "power3.out" },
+        0.8
+      );
+      chips.forEach(function (el, i) {
+        tl.fromTo(
+          el,
+          { scale: 0, opacity: 0, y: 24 },
+          { scale: 1, opacity: 1, y: 0, duration: 0.32, ease: "power3.out" },
+          0.95 + i * 0.13
+        );
+      });
+
+      /* Scene 3 (2.1-3.5) - on the beat the eighth chip lands, the headline
+         spring-pops under the grid, the label fades a half-beat later, and
+         a hairline accent rule draws between the eight and the count. Held. */
+      tl.fromTo(
+        "#f02-start-h2",
+        { scale: 0.72, opacity: 0, y: 16 },
+        { scale: 1, opacity: 1, y: 0, duration: 0.44, ease: "back.out(1.6)" },
+        2.1
+      );
+      tl.fromTo(
+        "#f02-start-label",
+        { opacity: 0, y: 16 },
+        { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" },
+        2.32
+      );
+      tl.fromTo(
+        "#f02-start-rule",
+        { scaleX: 0 },
+        { scaleX: 1, duration: 0.5, ease: "power3.out" },
+        2.55
+      );
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["02-start"] = tl;
+      tl.seek(0);
+    })();
+  </script>
+</template>

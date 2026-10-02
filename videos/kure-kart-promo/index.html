@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js" integrity="sha384-sG0Hv1tP1lZCk9KQmrIbY/XNwi+OY84GQqhMscbnsoBFqAz8KNCil1kvfL3Hbbk2" crossorigin="anonymous"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #000;
+      }
+      #root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #0B1A2A;
+      }
+      .scene {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        /* フレームの映像 (下の <video>) は地なので、文字のシーンを上に置く。
+           各フレームは映像を持たず、ここで index が直接並べる (福山版と同じ重ね順) */
+        z-index: 5;
+      }
+      #root > video.clip {
+        z-index: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="30"
+      data-width="1920"
+      data-height="1080"
+    >
+      <div
+        id="el-01-station"
+        class="scene"
+        data-composition-id="01-station"
+        data-composition-src="compositions/frames/01-station.html"
+        data-start="0"
+        data-duration="4"
+        data-track-index="0"
+      ></div>
+
+      <div
+        id="el-02-start"
+        class="scene"
+        data-composition-id="02-start"
+        data-composition-src="compositions/frames/02-start.html"
+        data-start="4"
+        data-duration="4"
+        data-track-index="1"
+      ></div>
+
+      <div
+        id="el-03-museum"
+        class="scene"
+        data-composition-id="03-museum"
+        data-composition-src="compositions/frames/03-museum.html"
+        data-start="8"
+        data-duration="4.5"
+        data-track-index="0"
+      ></div>
+
+      <div
+        id="el-04-alley"
+        class="scene"
+        data-composition-id="04-alley"
+        data-composition-src="compositions/frames/04-alley.html"
+        data-start="12.5"
+        data-duration="4.5"
+        data-track-index="1"
+      ></div>
+
+      <div
+        id="el-05-ondo"
+        class="scene"
+        data-composition-id="05-ondo"
+        data-composition-src="compositions/frames/05-ondo.html"
+        data-start="17"
+        data-duration="4.5"
+        data-track-index="0"
+      ></div>
+
+      <div
+        id="el-06-goal"
+        class="scene"
+        data-composition-id="06-goal"
+        data-composition-src="compositions/frames/06-goal.html"
+        data-start="21.5"
+        data-duration="5.5"
+        data-track-index="1"
+      ></div>
+
+      <div
+        id="el-07-endcard"
+        class="scene"
+        data-composition-id="07-endcard"
+        data-composition-src="compositions/frames/07-endcard.html"
+        data-start="26.5"
+        data-duration="3.5"
+        data-track-index="0"
+      ></div>
+
+      <video id="el-01-station-video-0" src="assets/station.mp4" muted playsinline class="clip" style="position:absolute;left:0px;top:0px;width:1920px;height:1080px;object-fit:cover" data-start="0" data-duration="4" data-track-index="1000"></video>
+
+      <video id="el-02-start-video-1" src="assets/start.mp4" muted playsinline class="clip" style="position:absolute;left:0px;top:0px;width:1920px;height:1080px;object-fit:cover" data-start="4" data-duration="4" data-track-index="2000"></video>
+
+      <video id="el-03-museum-video-2" src="assets/museum.mp4" muted playsinline class="clip" style="position:absolute;left:0px;top:0px;width:1920px;height:1080px;object-fit:cover" data-start="8" data-duration="4.5" data-track-index="3000"></video>
+
+      <video id="el-04-alley-video-3" src="assets/alley.mp4" muted playsinline class="clip" style="position:absolute;left:0px;top:0px;width:1920px;height:1080px;object-fit:cover" data-start="12.5" data-duration="4.5" data-track-index="4000"></video>
+
+      <video id="el-05-ondo-video-4" src="assets/spiral.mp4" muted playsinline class="clip" style="position:absolute;left:0px;top:0px;width:1920px;height:1080px;object-fit:cover" data-start="17" data-duration="4.5" data-track-index="5000"></video>
+
+      <video id="el-06-goal-video-5" src="assets/goal.mp4" muted playsinline class="clip" style="position:absolute;left:0px;top:0px;width:1920px;height:1080px;object-fit:cover" data-start="21.5" data-duration="5.5" data-track-index="6000"></video>
+
+      <!-- BGM: ユーザー指定の「急加速のカーブ.mp3」(31.2s)。頭から使い、終わり 1.5s でフェードアウト -->
+      <audio id="bgm" src="assets/audio/bgm.mp3" data-start="0" data-duration="30" data-media-start="0" data-volume="0.9" data-fade-in="0.3" data-fade-out="1.5" data-track-index="11"></audio>
+
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+      // ── frame transitions (injected by transitions.mjs) ──
+      (function () { var tl = window.__timelines["main"];
+        tl.to("#el-06-goal", { opacity: 0, duration: 0.5, ease: "power2.inOut" }, 26.5);
+        tl.fromTo("#el-07-endcard", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power2.inOut" }, 26.5);
+        // 音戸のゴールの映像はフレームの外 (index 直下) にあるので、transitions.mjs のクロスフェードに含まれない。
+        // 26.5s でぶつ切りにならないよう、尺を 5.5s にしてエンドカードと一緒に落とす。
+        tl.to("#el-06-goal-video-5", { opacity: 0, duration: 0.5, ease: "power2.inOut" }, 26.5);
+        tl.to({}, { duration: 30 }, 0); // full-span anchor — main.duration() == composition total (Studio master duration)
+      })();
+    </script>
+  </body>
+</html>

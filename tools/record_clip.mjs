@@ -2,6 +2,7 @@
 //   node tools/record_clip.mjs <出力ディレクトリ> <秒数> <クエリ>
 //   例: node tools/record_clip.mjs videos/clips/castle 4 "rec=1&nohud=1&photo=34.49104,133.36113,16,150,150&orbit=6"
 //
+// START=1 なら、タイトル画面の PLAY を押して発走前の演出から撮る (クエリに debug を付けない)。
 // ゲーム側は src/main.ts の ?rec=1 で window.__recStep(n) を生やす。描画が 1〜8fps しか
 // 出ない環境 (swiftshader) でも、コマごとに進めて撮るので出力は滑らかになる。
 // 撮り終わったら tools/clips_to_mp4.mjs で mp4 にする。
@@ -29,7 +30,15 @@ const browser = await chromium.launch({
 const page = await browser.newPage({ viewport: { width: W, height: H }, deviceScaleFactor: 1 });
 page.on('pageerror', e => console.log('[pageerror]', e.message));
 await page.goto(`http://localhost:${PORT}/?${query}`, { waitUntil: 'load' });
-await page.waitForFunction(() => window.__debug && window.__recStep, null, { timeout: 600000 });
+if (process.env.START === '1') {
+  // 発走前の演出を撮る: タイトル画面の PLAY を押してから進める (debug を付けないと演出が入る)
+  await page.waitForFunction(() => { const b = document.getElementById('startBtn'); return b && !b.disabled && window.__recStep; }, null, { timeout: 600000 });
+  await page.waitForTimeout(1500);
+  await page.click('#startBtn');
+  await page.evaluate(() => { for (const id of ['hud', 'touch']) { const e = document.getElementById(id); if (e) e.style.display = 'none'; } });
+} else {
+  await page.waitForFunction(() => window.__debug && window.__recStep, null, { timeout: 600000 });
+}
 await page.waitForTimeout(1500);
 
 /** 1 コマ進めて、合成が終わるまで待つ。swiftshader では描き込みが遅れて
